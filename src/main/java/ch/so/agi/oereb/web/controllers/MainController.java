@@ -48,9 +48,22 @@ public class MainController {
 			@PathVariable("format") String format,
 			@RequestParam(value = "XY") String xy) {
 		
+		String[] parts = xy.split(",");
+		log.info(String.valueOf(parts.length));
+		if (parts.length != 2) {
+			// TODO: response (siehe Weisung wegen Status-Code)
+			// Spring Boot macht aus IllegalArgumentException ein 500 ohne Extras.
+			throw new IllegalArgumentException("Request parameter 'XY' not in correct format");
+		}
 		
-		
+		// TODO: exception/response handling
+		// NumberFormatException -> 500
+		double easting = Double.parseDouble(parts[0]);
+		double northing = Double.parseDouble(parts[1]);
+
 		log.info(format);
+		log.info(String.valueOf(easting));
+		log.info(String.valueOf(northing));
 		
 		
 		return ResponseEntity
