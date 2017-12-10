@@ -15,7 +15,7 @@ import ch.so.agi.oereb.web.domains.Egrid;
 // TODO: create a read-only repo
 // TODO: do not use paging. At the moment just for developing.
 // TODO: This is Spring Boot magic. 
-@RepositoryRestResource(collectionResourceRel = "/fubar", path = "/fubar")
+
 public interface EgridRepository extends PagingAndSortingRepository<Egrid, Long> {
 	List<Egrid> findByEgrid(@Param("egrid") String egrid);
 }

@@ -1,6 +1,8 @@
 package ch.so.agi.oereb.web.controllers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,19 +19,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+import ch.so.agi.oereb.web.domains.Egrid;
+import ch.so.agi.oereb.web.services.EgridServiceImpl;
+
+@Controller
 public class MainController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
     
 	@Autowired
 	private Environment env;
+	
+	@Autowired
+	private EgridServiceImpl egridService;
 	 
 	private final String[] outputFormats = {
 			"xml", 
 			"json"
 	};
 
-	@RequestMapping(value="/getegrid", method=RequestMethod.GET)
+	@RequestMapping(value="/getegrid", method=RequestMethod.GET, produces = "application/xml")
 	@ResponseBody
 	public ResponseEntity<?> test() {
 		String output = "fubar";
@@ -42,12 +50,18 @@ public class MainController {
 
 	}
 	
-	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET, params={"XY"})
+	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,
+			produces={MediaType.APPLICATION_XML_VALUE}, 
+			params={"XY"})
 	@ResponseBody
 	public ResponseEntity<?> getEgridByXY(
+	//public List<Egrid> getEgridByXY(
 			@PathVariable("format") String format,
 			@RequestParam(value = "XY") String xy) {
 		
+		
+		// TODO: Do this in service method because we probably create two controllers, one 
+		// for each output format.
 		String[] parts = xy.split(",");
 		log.info(String.valueOf(parts.length));
 		if (parts.length != 2) {
@@ -65,6 +79,22 @@ public class MainController {
 		log.info(String.valueOf(easting));
 		log.info(String.valueOf(northing));
 		
+        //List<Egrid> egridResponse=egridService.getEgridByXY();
+        //return ResponseEntity.ok(egridResponse);
+		
+		Egrid myEgrid = new Egrid();
+		myEgrid.setT_id(123L);
+		myEgrid.setEgrid("CH12355");
+		myEgrid.setIdentnd("Fubarxxx");
+		myEgrid.setNumber("654");
+		
+		List<Egrid> egridList = new ArrayList<Egrid>();
+		egridList.add(myEgrid);
+		
+		return ResponseEntity.ok(myEgrid);
+
+		
+		/*
 		
 		return ResponseEntity
 				.ok()
@@ -72,6 +102,7 @@ public class MainController {
 				.contentLength(format.length())
 				//.contentType(MediaType.parseMediaType("text/plain"))
 				.body(format);	 
+		*/
 	}
 
 	
