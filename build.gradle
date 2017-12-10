@@ -20,6 +20,7 @@ apply plugin: 'io.spring.dependency-management'
 group = 'ch.so.agi.oereb'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
 	mavenCentral()
@@ -28,8 +29,8 @@ repositories {
 }
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-data-jpa')
-	compile('org.springframework.boot:spring-boot-starter-data-rest')
+	compile('org.springframework.boot:spring-boot-starter-data-jpa') 
+	//compile('org.springframework.boot:spring-boot-starter-data-rest')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	compile('org.springframework.boot:spring-boot-starter-jersey')
 	compile('com.bedatadriven:jackson-datatype-jts:2.4')	
@@ -37,4 +38,19 @@ dependencies {
 	compile('org.hibernate:hibernate-spatial:5.2.12.Final')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	testCompile('org.springframework.boot:spring-boot-starter-test')	
+}
+
+sourceSets {
+	generated {
+		java {
+			srcDir 'src/generated/java'
+		}
+		resources {
+			srcDir 'src/generated/resources'
+		}
+	}
+    main {
+        compileClasspath += generated.output
+        runtimeClasspath += generated.output
+    }	
 }

@@ -14,13 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import ch.so.agi.oereb.web.domains.Egrid;
+//import ch.so.agi.oereb.web.generated.GetEGRIDResponseListType;
+//import ch.so.agi.oereb.web.generated.GetEGRIDResponseType;
+import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
 import ch.so.agi.oereb.web.services.EgridServiceImpl;
-import ch.so.agi.oereb.web.xml.GetEGRIDResponseListType;
-import ch.so.agi.oereb.web.xml.GetEGRIDResponseType;
 
 @Component
 @Path("/getegrid/xml/")
-public class GetEgridResponseController {
+public class GetEGRIDResponseController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
@@ -38,7 +39,7 @@ public class GetEgridResponseController {
 	
 	@GET
     @Produces(MediaType.APPLICATION_XML)
-	public GetEGRIDResponseListType helloMessage(@QueryParam("XY") String xy) {
+	public GetEGRIDResponseType helloMessage(@QueryParam("XY") String xy) {
 		return egridService.getEgrids();
 	}
 
