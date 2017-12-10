@@ -1,4 +1,4 @@
-package ch.so.agi.oereb.web;
+package ch.so.agi.oereb.web.config;
 
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.vividsolutions.jts.geom.GeometryFactory;

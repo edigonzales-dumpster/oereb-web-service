@@ -18,7 +18,7 @@ import com.vividsolutions.jts.geom.Polygon;
 
 @Entity
 @Table(name="v_oereb_real_estate", schema="av_avdpool_ng")
-@XmlRootElement(name = "GetEGRIDResponse")
+//@XmlRootElement(name = "GetEGRIDResponse")
 //@XmlAccessorType(XmlAccessType.FIELD)
 public class Egrid {
 	@Id

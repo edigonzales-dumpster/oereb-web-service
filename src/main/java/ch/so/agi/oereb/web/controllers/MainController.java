@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.so.agi.oereb.web.domains.Egrid;
 import ch.so.agi.oereb.web.services.EgridServiceImpl;
 
-@Controller
+//@Controller
 public class MainController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
     
