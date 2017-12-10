@@ -46,17 +46,16 @@ import javax.xml.bind.annotation.XmlSchema;
 @XmlType(name = "GetEGRIDResponseType", propOrder = {
     "egridAndNumberAndIdentDN"
 })
-@XmlRootElement(name="GetEGRIDResponse")
+@XmlRootElement(name="GetEGRIDResponse", namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract")
 public class GetEGRIDResponseType {
 
     @XmlElementRefs({
-        @XmlElementRef(name = "number", namespace = "fubar", 
+        @XmlElementRef(name = "number", namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", 
         		type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "egrid", namespace = "",
+        @XmlElementRef(name = "egrid", namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract",
         		type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "identDN", namespace = "",
-        		type = JAXBElement.class, required = false),
-        		//namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract")
+        @XmlElementRef(name = "identDN", namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract",
+        		type = JAXBElement.class, required = false)
     })
     protected List<JAXBElement<String>> egridAndNumberAndIdentDN;
 

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ch.so.agi.oereb.web.domains.Egrid;
 import ch.so.agi.oereb.web.services.EgridServiceImpl;
 
-//@Controller
+@Controller
 public class MainController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
     
@@ -50,7 +50,8 @@ public class MainController {
 
 	}
 	
-	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,
+	//@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,
+	@RequestMapping(value="/getegrid2/{format:xml|json}/", method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE}, 
 			params={"XY"})
 	@ResponseBody
@@ -91,7 +92,7 @@ public class MainController {
 		List<Egrid> egridList = new ArrayList<Egrid>();
 		egridList.add(myEgrid);
 		
-		return ResponseEntity.ok(myEgrid);
+		return ResponseEntity.ok(egridService.getEgrids());
 
 		
 		/*

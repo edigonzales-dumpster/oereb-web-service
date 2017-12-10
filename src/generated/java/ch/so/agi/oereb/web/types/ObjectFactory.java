@@ -33,10 +33,10 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _GetEGRIDResponse_QNAME = new QName("", "GetEGRIDResponse");
-    private final static QName _GetEGRIDResponseTypeNumber_QNAME = new QName("fubar", "number");
-    private final static QName _GetEGRIDResponseTypeEgrid_QNAME = new QName("", "egrid");
-    private final static QName _GetEGRIDResponseTypeIdentDN_QNAME = new QName("", "identDN");
+    private final static QName _GetEGRIDResponse_QNAME = new QName("http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", "GetEGRIDResponse");
+    private final static QName _GetEGRIDResponseTypeNumber_QNAME = new QName("http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", "number");
+    private final static QName _GetEGRIDResponseTypeEgrid_QNAME = new QName("http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", "egrid");
+    private final static QName _GetEGRIDResponseTypeIdentDN_QNAME = new QName("http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", "identDN");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: ch.so.agi.oereb.web.types
@@ -57,7 +57,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link GetEGRIDResponseType }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "GetEGRIDResponse")
+    @XmlElementDecl(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", name = "GetEGRIDResponse")
     public JAXBElement<GetEGRIDResponseType> createGetEGRIDResponse(GetEGRIDResponseType value) {
         return new JAXBElement<GetEGRIDResponseType>(_GetEGRIDResponse_QNAME, GetEGRIDResponseType.class, null, value);
     }
@@ -66,7 +66,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "fubar", name = "number", scope = GetEGRIDResponseType.class)
+    @XmlElementDecl(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", name = "number", scope = GetEGRIDResponseType.class)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     public JAXBElement<String> createGetEGRIDResponseTypeNumber(String value) {
         return new JAXBElement<String>(_GetEGRIDResponseTypeNumber_QNAME, String.class, GetEGRIDResponseType.class, value);
@@ -76,7 +76,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "egrid", scope = GetEGRIDResponseType.class)
+    @XmlElementDecl(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", name = "egrid", scope = GetEGRIDResponseType.class)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     public JAXBElement<String> createGetEGRIDResponseTypeEgrid(String value) {
         return new JAXBElement<String>(_GetEGRIDResponseTypeEgrid_QNAME, String.class, GetEGRIDResponseType.class, value);
@@ -86,7 +86,7 @@ public class ObjectFactory {
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "", name = "identDN", scope = GetEGRIDResponseType.class)
+    @XmlElementDecl(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract", name = "identDN", scope = GetEGRIDResponseType.class)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     public JAXBElement<String> createGetEGRIDResponseTypeIdentDN(String value) {
         return new JAXBElement<String>(_GetEGRIDResponseTypeIdentDN_QNAME, String.class, GetEGRIDResponseType.class, value);
