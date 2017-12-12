@@ -2,14 +2,21 @@ package ch.so.agi.oereb.web.services;
 
 import java.util.List;
 
-import ch.so.agi.oereb.web.domains.Egrid;
+import com.vividsolutions.jts.geom.Point;
+
+import ch.so.agi.oereb.web.domains.EgridParcel;
 import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
 //import ch.so.agi.oereb.web.generated.GetEGRIDResponseListType;
 //import ch.so.agi.oereb.web.generated.GetEGRIDResponseType;
 
 public interface EgridService {
 	
-	//GetEGRIDResponseType getEgridByXY();
+	GetEGRIDResponseType getEgridByNumberAndIdentDN(String number, String identDN);
+	
+	GetEGRIDResponseType getEgridByXY(double easting, double northing);
+	
+	GetEGRIDResponseType getEgridByGNSS(double latitude, double longitude);
+
 	
 	GetEGRIDResponseType getEgrids();
 

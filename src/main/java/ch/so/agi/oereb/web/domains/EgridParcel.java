@@ -11,16 +11,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.hibernate.annotations.Immutable;
+
 import com.vividsolutions.jts.geom.Polygon;
 
 
 // TODO: rename to EgridResponse?
 
 @Entity
+@Immutable
 @Table(name="v_oereb_real_estate", schema="av_avdpool_ng")
-//@XmlRootElement(name = "GetEGRIDResponse")
-//@XmlAccessorType(XmlAccessType.FIELD)
-public class Egrid {
+public class EgridParcel {
 	@Id
 	@GeneratedValue
 	private Long t_id;
@@ -32,7 +33,7 @@ public class Egrid {
 	private String number;
 	
     //@XmlElement
-	private String identnd;
+	private String identdn;
 	
 	// TODO: this is a test
 	//@Transient
@@ -42,7 +43,7 @@ public class Egrid {
 	
 	//private int fosnr;
 	
-	//private Polygon geometrie;
+	private Polygon geometrie;
 
 	public Long getT_id() {
 		return t_id;
@@ -68,12 +69,12 @@ public class Egrid {
 		this.number = number;	
 	}
 	
-	public String getIdentnd() {
-		return identnd;
+	public String getIdentdn() {
+		return identdn;
 	}
 	
-	public void setIdentnd(String identnd) {
-		this.identnd = identnd;
+	public void setIdentnd(String identdn) {
+		this.identdn = identdn;
 	}
 
 	/*
@@ -88,9 +89,14 @@ public class Egrid {
 	public int getFosnr() {
 		return fosnr;
 	}
-
+	*/
+	
+	public void setGeometrie(Polygon gometrie) {
+		this.geometrie = geometrie;
+	}
+	
 	public Polygon getGeometrie() {
 		return geometrie;
 	}
-	*/
+	
 }
