@@ -15,34 +15,20 @@ import org.hibernate.annotations.Immutable;
 
 import com.vividsolutions.jts.geom.Polygon;
 
-
-// TODO: rename to EgridResponse?
-
 @Entity
 @Immutable
-@Table(name="v_oereb_real_estate", schema="av_avdpool_ng")
+@Table(name="egrid_parcel", schema="agi_oereb_app")
 public class EgridParcel {
 	@Id
 	@GeneratedValue
 	private Long t_id;
 
-    //@XmlElement
 	private String egrid;
 	
-    //@XmlElement
 	private String number;
 	
-    //@XmlElement
 	private String identdn;
-	
-	// TODO: this is a test
-	//@Transient
-	//private String type;
-	
-	//private String canton;
-	
-	//private int fosnr;
-	
+		
 	private Polygon geometrie;
 
 	public Long getT_id() {
@@ -76,20 +62,6 @@ public class EgridParcel {
 	public void setIdentnd(String identdn) {
 		this.identdn = identdn;
 	}
-
-	/*
-	public String getType() {
-		return type;
-	}
-
-	public String getCanton() {
-		return canton;
-	}
-
-	public int getFosnr() {
-		return fosnr;
-	}
-	*/
 	
 	public void setGeometrie(Polygon gometrie) {
 		this.geometrie = geometrie;
