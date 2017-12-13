@@ -50,6 +50,9 @@ public class GetEGRIDResponseController {
 	public ResponseEntity<?> getEgridByXY (
 			@PathVariable("format") String format,
 			@RequestParam(value = "XY") String xy) {
+		
+		log.info("**************************");
+		log.info(env.getProperty("spring.datasource.password"));
 			
 		double[] coords = validateCoordinateRequestParam(xy);
 				

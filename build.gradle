@@ -54,14 +54,14 @@ sourceSets {
 			srcDir 'src/generated/resources'
 		}
 	}
-    main {
-        compileClasspath += generated.output
-        runtimeClasspath += generated.output
-    }	
+	main {
+		compileClasspath += generated.output
+		runtimeClasspath += generated.output
+	}	
 	test {
-        compileClasspath += generated.output
-        runtimeClasspath += generated.output
-    }
+		compileClasspath += generated.output
+		runtimeClasspath += generated.output
+	}
 }
 
 task buildDocker(type: Docker) {
