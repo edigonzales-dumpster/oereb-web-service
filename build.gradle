@@ -9,6 +9,7 @@ buildscript {
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("se.transmode.gradle:gradle-docker:1.2")
 	}
 }
 
@@ -16,6 +17,7 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'docker'
 
 group = 'ch.so.agi.oereb'
 version = '0.0.1-SNAPSHOT'
@@ -60,4 +62,17 @@ sourceSets {
         compileClasspath += generated.output
         runtimeClasspath += generated.output
     }
+}
+
+task buildDocker(type: Docker) {
+	tag = "sogis/${applicationName}"
+	tagVersion = 'latest'
+	baseImage = 'frolvlad/alpine-oraclejdk8:slim'
+	push = project.hasProperty('push') // <-> "./gradlew buildDocker -Ppush"
+	applicationName = jar.baseName
+	addFile {
+		from jar
+		rename {'app.jar'}
+	}
+  	entryPoint(['java', '-Djava.security.egd=file:/dev/./urandom', '-jar', '/app.jar'])
 }
