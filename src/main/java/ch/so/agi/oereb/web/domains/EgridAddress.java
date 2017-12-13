@@ -19,6 +19,8 @@ public class EgridAddress extends Egrid {
 		this.number = number;
 	}
 	
+	public EgridAddress() {}
+	
 	private int postalcode;
 	
 	private String localisation;
