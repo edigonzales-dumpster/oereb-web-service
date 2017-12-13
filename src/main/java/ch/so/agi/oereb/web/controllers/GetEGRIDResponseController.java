@@ -104,8 +104,17 @@ public class GetEGRIDResponseController {
 			String postalcode = identdn;
 			String localisation = number;
 			
-			//return ResponseEntity.ok(egridService.getEgridByPostalcodeAndLocalisation(postalcode, localisation));
-			return ResponseEntity.ok(null);
+			log.debug(postalcode);
+			log.debug(localisation);
+			
+			GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, null);
+			
+			if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
+				log.warn("No egrid found at: " + postalcode + "/" + localisation);
+				return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+			}
+			
+			return ResponseEntity.ok(getEGRIDResponseType);
 		}
 		
 		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByNumberAndIdentDN(number, identdn);
@@ -115,7 +124,7 @@ public class GetEGRIDResponseController {
 			return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
 		}
 		
-		return ResponseEntity.ok(egridService.getEgridByNumberAndIdentDN(number, identdn));
+		return ResponseEntity.ok(getEGRIDResponseType);
 	}
 
 	@RequestMapping(value="/getegrid/{format:xml|json}/{postalcode}/{localisation}/{number}", method=RequestMethod.GET,
@@ -129,10 +138,15 @@ public class GetEGRIDResponseController {
 		log.debug(postalcode);
 		log.debug(localisation);
 		log.debug(number);
+				
+		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, number);
 		
-		// TODO: implement
-		//return ResponseEntity.ok(egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, number));
-		return ResponseEntity.ok(null);
+		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
+			log.warn("No egrid found at: " + postalcode + "/" + localisation + "/" + number);
+			return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+		}
+		
+		return ResponseEntity.ok(getEGRIDResponseType);
 	}
 
 	// For both coordinate request methods (XY, GNSS), 

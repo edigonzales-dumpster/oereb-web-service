@@ -15,12 +15,8 @@ import com.vividsolutions.jts.geom.Point;
 
 import ch.so.agi.oereb.web.domains.EgridParcel;
 
-// TODO: create a read-only repo
-// TODO: This is Spring Boot magic. 
-
+// TODO: create a read-only repo interface
 public interface EgridParcelRepository extends JpaRepository<EgridParcel, Long> {
-	
-	// TODO: why use (or use not) "@Param()"?
 	List<EgridParcel> findByNumberAndIdentdn(String number, String identdn);
 
     @Query("SELECT e FROM EgridParcel e WHERE intersects(e.geometrie, ?1) = true")
