@@ -15,13 +15,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
-import ch.so.agi.oereb.web.domains.Egrid;
-import ch.so.agi.oereb.web.domains.EgridAddress;
-import ch.so.agi.oereb.web.domains.EgridParcel;
+import ch.so.agi.oereb.web.domains.EgridEntity;
 import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
 import ch.so.agi.oereb.web.types.ObjectFactory;
-import ch.so.agi.oereb.web.repositories.EgridAddressRepository;
-import ch.so.agi.oereb.web.repositories.EgridParcelRepository;
+import ch.so.agi.oereb.web.repositories.EgridEntityRepository;
 
 @Service
 public class EgridServiceImpl implements EgridService {
@@ -29,26 +26,22 @@ public class EgridServiceImpl implements EgridService {
 	
 	private final static int SRID_LV95 = 2056;  
 	private final static int SRID_WGS84 = 4326;  
-
-    @Autowired
-    private EgridParcelRepository egridParcelRepository;
-    
+        
     @Autowired 
-    private EgridAddressRepository egridAddressRepository;
-    
+    private EgridEntityRepository egridEntityRepository;
+        
     @Override
 	public GetEGRIDResponseType getEgridByPostalcodeAndLocalisationAndNumber(String postalcode, String localisation, String number) {
-    		List<EgridAddress> egridAddressList;
+    		List<EgridEntity> egridEntityList;
     	
     		if (number == null) {
-        		egridAddressList = egridAddressRepository.getEgridByPostalcodeAndLocalisation(Integer.valueOf(postalcode), localisation);
+        		egridEntityList = egridEntityRepository.getEgridByPostalcodeAndLocalisation(Integer.valueOf(postalcode), localisation);
     		} else {
-        		egridAddressList = egridAddressRepository.getEgridByPostalcodeAndLocalisationAndHousingNumber(Integer.valueOf(postalcode), localisation, number);
+        		egridEntityList = egridEntityRepository.getEgridByPostalcodeAndLocalisationAndHousingNumber(Integer.valueOf(postalcode), localisation, number);
     		}
-    		
-    		return createGetEGRIDResponseType(egridAddressList);
-    }
 
+    		return createGetEGRIDResponseType(egridEntityList);
+    }
     
     @Override
     public GetEGRIDResponseType getEgridByGNSS(double latitude, double longitude) {
@@ -56,35 +49,35 @@ public class EgridServiceImpl implements EgridService {
 		Point p = factory.createPoint(new Coordinate(longitude, latitude));
 		p.setSRID(SRID_WGS84);
 	
-		List<EgridParcel> egridParcelList = egridParcelRepository.findByGNSS(p);
+		List<EgridEntity> egridEntityList = egridEntityRepository.findByGNSS(p);
 				
-		return createGetEGRIDResponseType(egridParcelList);
+		return createGetEGRIDResponseType(egridEntityList);
     }
     
     @Override
     public GetEGRIDResponseType getEgridByXY(double easting, double northing) {
-    		GeometryFactory factory = new GeometryFactory();
-    		Point p = factory.createPoint(new Coordinate(easting, northing));
-    		p.setSRID(SRID_LV95);
+		GeometryFactory factory = new GeometryFactory();
+		Point p = factory.createPoint(new Coordinate(easting, northing));
+		p.setSRID(SRID_LV95);
+
+    		List<EgridEntity> egridEntityList = egridEntityRepository.findByXY(p);
     		    		
-    		List<EgridParcel> egridParcelList = egridParcelRepository.findByXY(p);
-    		    		
-    		return createGetEGRIDResponseType(egridParcelList);
+    		return createGetEGRIDResponseType(egridEntityList);
     }
     
     @Override
     public GetEGRIDResponseType getEgridByNumberAndIdentDN(String number, String identdn) {
-    		List<EgridParcel> egridParcelList = egridParcelRepository.findByNumberAndIdentdn(number, identdn);
+    		List<EgridEntity> egridEntityList = egridEntityRepository.findByNumberAndIdentdn(number, identdn);
     		
-    		return createGetEGRIDResponseType(egridParcelList);
+    		return createGetEGRIDResponseType(egridEntityList);
     }
     
-    private GetEGRIDResponseType createGetEGRIDResponseType(List<?> egridList) {
+    private GetEGRIDResponseType createGetEGRIDResponseType(List<EgridEntity> egridList) {
 		ObjectFactory objectFactory = new ObjectFactory();
 		GetEGRIDResponseType getEGRIDResponseType = objectFactory.createGetEGRIDResponseType();
 
-		for (Iterator it = egridList.iterator(); it.hasNext(); ) {
-			Egrid egridObj = (Egrid) it.next();
+		for (Iterator<EgridEntity> it = egridList.iterator(); it.hasNext(); ) {
+			EgridEntity egridObj = it.next();
 			
 	    		JAXBElement<String> egridEl = objectFactory.createGetEGRIDResponseTypeEgrid(egridObj.getEgrid());
 	    		getEGRIDResponseType.getEgridAndNumberAndIdentDN().add(egridEl);

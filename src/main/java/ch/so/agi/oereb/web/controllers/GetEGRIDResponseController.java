@@ -1,17 +1,9 @@
 package ch.so.agi.oereb.web.controllers;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,32 +14,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import ch.so.agi.oereb.web.domains.EgridParcel;
 import ch.so.agi.oereb.web.services.EgridServiceImpl;
 import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
 
 @RestController
 public class GetEGRIDResponseController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-    
-	@Autowired
-	private Environment env;
-	
+    	
 	@Autowired
 	private EgridServiceImpl egridService;
 	
 	//200: OK, Antwort konnte erstellt werden
 	//204: Kein Grundstück gefunden 
 	//500: Andere Fehler 
-	
-	
-	
-	
-	
-	
+		
 	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE}, 
 			params={"XY"})
