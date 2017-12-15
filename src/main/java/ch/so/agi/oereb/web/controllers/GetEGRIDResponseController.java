@@ -43,6 +43,11 @@ public class GetEGRIDResponseController {
 	//204: Kein Grundstück gefunden 
 	//500: Andere Fehler 
 	
+	
+	
+	
+	
+	
 	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE}, 
 			params={"XY"})
@@ -51,9 +56,6 @@ public class GetEGRIDResponseController {
 			@PathVariable("format") String format,
 			@RequestParam(value = "XY") String xy) {
 		
-		log.info("**************************");
-		log.info(env.getProperty("spring.datasource.password"));
-			
 		double[] coords = validateCoordinateRequestParam(xy);
 				
 		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByXY(coords[0], coords[1]);
@@ -84,8 +86,9 @@ public class GetEGRIDResponseController {
 		
 		return ResponseEntity.ok(getEGRIDResponseType);
 	}
-	
-	@RequestMapping(value="/getegrid/{format:xml|json}/{identdn}/{number}", method=RequestMethod.GET,
+		
+	// TODO: improve regex
+	@RequestMapping(value="/getegrid/{format:xml|json}/{identdn:.{12,12}}/{number}", method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE})
 	@ResponseBody
 	public ResponseEntity<?> getEgridByNumberAndIdentDN (
@@ -94,32 +97,7 @@ public class GetEGRIDResponseController {
 		
 		log.debug(identdn);
 		log.debug(number);
-		
-		// TODO: Can this be done better/nicer?
-		// Since the housing number is optional the "GetEgridByAddress"
-		// request has only two path variables like this one. There is no way
-		// to distinguish the two except some heuristic?!
-		// If the identdn has only 4 digits, we assume it is not a
-		// identdn but a postal code.
-		if (identdn.length() == 4) {
-			log.debug("IdentDN has only 4 digits. We assume it is a postalcode instead.");
-			
-			String postalcode = identdn;
-			String localisation = number;
-			
-			log.debug(postalcode);
-			log.debug(localisation);
-			
-			GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, null);
-			
-			if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
-				log.warn("No egrid found at: " + postalcode + "/" + localisation);
-				return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
-			}
-			
-			return ResponseEntity.ok(getEGRIDResponseType);
-		}
-		
+				
 		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByNumberAndIdentDN(number, identdn);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
@@ -130,10 +108,30 @@ public class GetEGRIDResponseController {
 		return ResponseEntity.ok(getEGRIDResponseType);
 	}
 
-	@RequestMapping(value="/getegrid/{format:xml|json}/{postalcode}/{localisation}/{number}", method=RequestMethod.GET,
+	@RequestMapping(value="/getegrid/{format:xml|json}/{postalcode:[0-9]{4,4}}/{localisation}", method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE})
 	@ResponseBody
-	public ResponseEntity<?> getEgridByAddress (
+	public ResponseEntity<?> getEgridByPostalcodeAndLocalisation (
+			@PathVariable("postalcode") String postalcode,
+			@PathVariable("localisation") String localisation) {
+		
+		log.debug(postalcode);
+		log.debug(localisation);
+				
+		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, null);
+		
+		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
+			log.warn("No egrid found at: " + postalcode + "/" + localisation);
+			return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+		}
+		
+		return ResponseEntity.ok(getEGRIDResponseType);
+	}
+
+	@RequestMapping(value="/getegrid/{format:xml|json}/{postalcode:[0-9]{4,4}}/{localisation}/{number}", method=RequestMethod.GET,
+			produces={MediaType.APPLICATION_XML_VALUE})
+	@ResponseBody
+	public ResponseEntity<?> getEgridByPostalcodeAndLocalisationAndNumber (
 			@PathVariable("postalcode") String postalcode,
 			@PathVariable("localisation") String localisation,
 			@PathVariable("number") String number) {
