@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class EgridEntity implements Serializable {
+public class Egrid implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -16,7 +16,7 @@ public class EgridEntity implements Serializable {
 
 	private String number;
 	
-	public EgridEntity() {}
+	public Egrid() {}
 
 	public String getEgrid() {
 		return egrid;
