@@ -13,4 +13,4 @@
 //  elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED
 //)
 
-package ch.so.agi.oereb.web.types;
+package ch.so.agi.oereb.web.types.egridresponse;

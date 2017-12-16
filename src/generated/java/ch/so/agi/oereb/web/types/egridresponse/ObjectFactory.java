@@ -6,7 +6,7 @@
 //
 
 
-package ch.so.agi.oereb.web.types;
+package ch.so.agi.oereb.web.types.egridresponse;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;

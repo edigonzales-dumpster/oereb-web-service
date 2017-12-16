@@ -1,6 +1,6 @@
 package ch.so.agi.oereb.web.services;
 
-import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
+import ch.so.agi.oereb.web.types.egridresponse.GetEGRIDResponseType;
 
 public interface EgridService {
 	GetEGRIDResponseType getEgridByNumberAndIdentDN(String number, String identDN);

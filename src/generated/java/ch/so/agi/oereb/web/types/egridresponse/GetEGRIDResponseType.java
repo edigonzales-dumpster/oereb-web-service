@@ -4,7 +4,7 @@
 // Any modifications to this file will be lost upon recompilation of the source schema. 
 // Generated on: 2017.12.10 at 05:45:23 AM CET 
 //
-package ch.so.agi.oereb.web.types;
+package ch.so.agi.oereb.web.types.egridresponse;
 
 import java.util.ArrayList;
 import java.util.List;

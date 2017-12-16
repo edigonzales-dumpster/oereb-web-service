@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.so.agi.oereb.web.services.EgridServiceImpl;
-import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
+import ch.so.agi.oereb.web.types.egridresponse.GetEGRIDResponseType;
 
 @RestController
 public class GetEGRIDResponseController {

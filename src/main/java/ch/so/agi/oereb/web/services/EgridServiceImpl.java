@@ -16,9 +16,9 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
 import ch.so.agi.oereb.web.domains.Egrid;
-import ch.so.agi.oereb.web.types.GetEGRIDResponseType;
-import ch.so.agi.oereb.web.types.ObjectFactory;
 import ch.so.agi.oereb.web.repositories.EgridRepository;
+import ch.so.agi.oereb.web.types.egridresponse.GetEGRIDResponseType;
+import ch.so.agi.oereb.web.types.egridresponse.ObjectFactory;
 
 @Service
 public class EgridServiceImpl implements EgridService {
