@@ -2,6 +2,7 @@ package ch.so.agi.oereb.web.services;
 
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -17,15 +18,17 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extract.GetExtractByIdResponseType;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.CantonCode;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Extract;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
+import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateType;
+import ch.so.agi.oereb.web.repositories.RealEstateDPRRepository;
 
 // TODO: Exception handling!!!
 
 @Service 
 public class ExtractServiceImpl implements ExtractService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-	
+		
 	@Autowired
-	Environment env;
+	private RealEstateDPRRepository realEstateDPRRepository;
 
 	@Override
 	public GetExtractByIdResponseType getDummy(String egrid) throws DatatypeConfigurationException {
@@ -49,15 +52,23 @@ public class ExtractServiceImpl implements ExtractService {
 		// Extract.RealEstate_DPR
 		RealEstateDPR realEstateDPR = objectFactoryExtractData.createRealEstateDPR();
 
-		// TODO: wie hole ich das aus den Daten? Steht das irgendwo?
-		// Oder in der Abfrage-Query hardcodieren, da die Query ja 
-		// sowieso eine Abstraktionsschicht bilden darf/muss/soll/kann (?).
-		String cantonCode = "SO";
-		if (env.containsProperty("oereb.canton")) {
-			cantonCode = env.getProperty("oereb.canton");
-		}
+		List<ch.so.agi.oereb.web.domains.RealEstateDPR> realEstateDPRList = realEstateDPRRepository.findByEgrid(egrid);
 		
-		realEstateDPR.setCanton(CantonCode.fromValue(cantonCode));
+		// TODO: check for only one result if there is no other possibility?
+		// TODO: Throw exception if none is found.
+		log.info(String.valueOf(realEstateDPRList.size()));
+
+		ch.so.agi.oereb.web.domains.RealEstateDPR realEstateDPREntity = realEstateDPRList.get(0);
+		
+		realEstateDPR.setNumber(realEstateDPREntity.getNumber());
+		realEstateDPR.setIdentDN(realEstateDPREntity.getIdentdn());
+		realEstateDPR.setEGRID(realEstateDPREntity.getEgrid());
+		realEstateDPR.setType(RealEstateType.valueOf(realEstateDPREntity.getType()));
+		realEstateDPR.setCanton(CantonCode.valueOf(realEstateDPREntity.getCanton()));
+		realEstateDPR.setMunicipality(realEstateDPREntity.getMunicipality());
+		realEstateDPR.setFosNr(Integer.valueOf(realEstateDPREntity.getFosnr()));
+		realEstateDPR.setMetadataOfGeographicalBaseData(realEstateDPREntity.getMetadataOfGeographicalBasedata());
+		realEstateDPR.setLandRegistryArea(realEstateDPREntity.getLandRegistryArea());
 		
 		extract.setRealEstate(realEstateDPR);
 		
