@@ -36,7 +36,7 @@ public class GetEGRIDResponseController {
 	public ResponseEntity<?> getEgridByXY (
 			@PathVariable("format") String format,
 			@RequestParam(value = "XY") String xy) {
-		
+
 		double[] coords = validateCoordinateRequestParam(xy);
 				
 		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByXY(coords[0], coords[1]);
@@ -46,6 +46,7 @@ public class GetEGRIDResponseController {
 			return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
 		}
 		return ResponseEntity.ok(egridService.getEgridByXY(coords[0], coords[1]));
+		//return ResponseEntity.ok().body("adsf");
 	}
 	
 	@RequestMapping(value="/getegrid/{format:xml|json}/", method=RequestMethod.GET,

@@ -10,6 +10,8 @@ OEREB web service implementation with Spring Boot.
 * [http://localhost:8888/oereb/getegrid/xml/2540/Flughafenstrasse/117](http://localhost:8888/oereb/getegrid/xml/2540/Flughafenstrasse/117)
 * [http://localhost:8888/oereb/getegrid/xml/2540/Flughafenstrasse/](http://localhost:8888/oereb/getegrid/xml/2540/Flughafenstrasse/)
 
+* [http://localhost:8888/oereb/extract/reduced/xml/geometry/CH870672603279](http://localhost:8888/oereb/extract/reduced/xml/geometry/CH870672603279)
+
 
 ## Running OEREB web service
 `docker run -p 8888:8888 -e OEREB_DB_PASS=XXXXXXXXXXXX sogis/oereb-web-service:latest`
