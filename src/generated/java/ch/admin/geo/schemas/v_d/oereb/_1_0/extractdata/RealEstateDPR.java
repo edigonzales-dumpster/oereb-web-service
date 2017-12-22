@@ -81,7 +81,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "RealEstate_DPR", propOrder = {
+@XmlType(name = "RealEstate_DPR", namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/ExtractData", propOrder = {
     "number",
     "identDN",
     "egrid",

@@ -77,7 +77,7 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
     "embeddable",
     "extract"
 })
-@XmlRootElement(name="GetExtractByIdResponse", namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/ExtractData")
+@XmlRootElement(name="GetExtractByIdResponse", namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/Extract")
 public class GetExtractByIdResponseType {
 
     protected GetExtractByIdResponseType.Embeddable embeddable;
