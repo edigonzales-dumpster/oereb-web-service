@@ -22,7 +22,8 @@ phases:
       - chmod +rx -R *
       - ./gradlew clean build -x test -i
       - ./gradlew fubar
-      - chmod +rx -R *      
+      - chmod +rx -R *
+      - ls -la build/libs/oereb-web-service-0.0.1-SNAPSHOT.jar      
       - docker build -t sogis/oereb-web-service:latest .
   post_build:
     commands:
