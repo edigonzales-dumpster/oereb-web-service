@@ -24,6 +24,10 @@ phases:
       - ./gradlew fubar
       - chmod +rx -R *
       - ls -la build/libs/oereb-web-service-0.0.1-SNAPSHOT.jar      
+      - ls -la build/libs/     
+      - ls -la build/
+      - ls -la
+      - pwd    
       - docker build -t sogis/oereb-web-service:latest .
   post_build:
     commands:
