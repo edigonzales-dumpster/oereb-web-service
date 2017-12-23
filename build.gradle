@@ -76,3 +76,9 @@ task buildDocker(type: Docker) {
 	}
   	entryPoint(['java', '-Djava.security.egd=file:/dev/./urandom', '-jar', '/app.jar'])
 }
+
+task fubar() {
+	doLast{
+		println project.buildDir
+	}
+}

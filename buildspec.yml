@@ -21,6 +21,7 @@ phases:
       - echo Starting build `date`
       - chmod +rx -R *
       - ./gradlew clean build -x test -i
+      - ./gradlew fubar
       - docker build -t sogis/oereb-web-service:latest .
   post_build:
     commands:
