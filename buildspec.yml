@@ -28,6 +28,7 @@ phases:
       - echo Pushing the Docker image...
       - docker push sogis/oereb-web-service:latest
       - echo Deleting Dockerfile
+      - rm Dockerfile
 artifacts:
   files:
     - '**/*'
