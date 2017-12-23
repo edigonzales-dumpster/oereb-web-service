@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    JAVA_HOME: "/usr/lib/jvm/java-8-openjdk-amd64"
+                
+phases:
+  install:
+    commands:
+      - apt-get update -y
+      - apt-get install -y software-properties-common
+      - add-apt-repository ppa:openjdk-r/ppa
+      - apt-get update -y
+      - apt-get install -y openjdk-8-jdk
+  pre_build:
+    commands:
+      - echo Logging in to Docker Hub...
+      - docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
+  build:
+    commands:
+      - echo Starting build `date`
+      - chmod +rx -R *
+      - ./gradlew clean build
+      - docker build -t sogis/oereb-web-service:latest .
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push sogis/oereb-web-service:latest
+      - echo Deleting Dockerfile
+artifacts:
+  files:
+    - '**/*'
