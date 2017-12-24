@@ -40,25 +40,26 @@ public class ExtractServiceImpl implements ExtractService {
 		
 		GetExtractByIdResponseType extractByIdResponseType = objectFactoryExtract.createGetExtractByIdResponseType();
 		
+		/*
+		 * <Extract> 
+		 */
 		Extract extract = objectFactoryExtractData.createExtract();
 		
-		// Extract.CreationDate
+		/*
+		 * <Extract.CreationDate>
+		 */
 		GregorianCalendar cal = new GregorianCalendar();
 		DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 		XMLGregorianCalendar creationDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 		extract.setCreationDate(creationDate);
 		log.info("CreationDate: " + creationDate);
 		
-		// Extract.RealEstate_DPR
+		/*
+		 * <Extract.RealEstate_DPR>
+		 */
 		RealEstateDPR realEstateDPR = objectFactoryExtractData.createRealEstateDPR();
 
-		List<ch.so.agi.oereb.web.domains.RealEstateDPR> realEstateDPRList = realEstateDPRRepository.findByEgrid(egrid);
-		
-		// TODO: check for only one result if there is no other possibility?
-		// TODO: Throw exception if none is found.
-		log.info(String.valueOf(realEstateDPRList.size()));
-
-		ch.so.agi.oereb.web.domains.RealEstateDPR realEstateDPREntity = realEstateDPRList.get(0);
+		ch.so.agi.oereb.web.domains.RealEstateDPR realEstateDPREntity = realEstateDPRRepository.findOneByEgrid(egrid);
 		
 		realEstateDPR.setNumber(realEstateDPREntity.getNumber());
 		realEstateDPR.setIdentDN(realEstateDPREntity.getIdentdn());
@@ -69,6 +70,7 @@ public class ExtractServiceImpl implements ExtractService {
 		realEstateDPR.setFosNr(Integer.valueOf(realEstateDPREntity.getFosnr()));
 		realEstateDPR.setMetadataOfGeographicalBaseData(realEstateDPREntity.getMetadataOfGeographicalBasedata());
 		realEstateDPR.setLandRegistryArea(realEstateDPREntity.getLandRegistryArea());
+		//realEstateDPR.setLimit(value);
 		
 		extract.setRealEstate(realEstateDPR);
 		
