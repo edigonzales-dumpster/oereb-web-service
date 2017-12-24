@@ -5,7 +5,7 @@
 // Generated on: 2017.12.16 at 02:30:28 PM CET 
 //
 
-
+/*
  @javax.xml.bind.annotation.XmlSchema (
       xmlns = {
         @javax.xml.bind.annotation.XmlNs(prefix = "data",
@@ -13,6 +13,6 @@
       },
       elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED
     )
-
-//@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/ExtractData", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+*/
+@javax.xml.bind.annotation.XmlSchema(namespace = "http://schemas.geo.admin.ch/V_D/OeREB/1.0/ExtractData", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package ch.admin.geo.schemas.v_d.oereb._1_0.extractdata;

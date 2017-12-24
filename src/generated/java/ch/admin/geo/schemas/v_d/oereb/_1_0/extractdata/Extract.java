@@ -43,7 +43,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Extract", namespace="http://schemas.geo.admin.ch/V_D/OeREB/1.0/ExtractData", propOrder = {
+@XmlType(name = "Extract", propOrder = {
     "creationDate",
     "realEstate"
 })
