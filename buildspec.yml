@@ -32,4 +32,4 @@ phases:
       - rm Dockerfile
 artifacts:
   files:
-    - '**/*'
+    - 'build/libs/*'

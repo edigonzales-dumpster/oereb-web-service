@@ -34,6 +34,8 @@ public class GetExtractByIdController {
 	
 	// TODO: Wann params={}, wann RequestParam?
 	
+	// TODO: throw error if LANG != "de"
+	
 	@RequestMapping(value="/extract/{flavour:reduced|full|signed|embeddable}/{format:xml|json|pdf}/geometry/{egrid:.{14,14}}", 
 			method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE})
@@ -66,7 +68,12 @@ public class GetExtractByIdController {
 		
 		log.info(outputMsg.toString());
 
-		return ResponseEntity.ok(extractService.getDummy(egrid));
+		boolean isReduced = false;
+		if (flavour.equalsIgnoreCase("reduced")) {
+			isReduced = true;
+		}
+		
+		return ResponseEntity.ok(extractService.getDummy(egrid, isReduced));
 		//return ResponseEntity.ok().body(outputMsg.toString());
 	}
 	

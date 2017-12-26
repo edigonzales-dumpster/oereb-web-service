@@ -6,6 +6,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+import com.vividsolutions.jts.geom.Polygon;
+
 // TODO: cast fosnr number to integer in query 
 // but cannot be done with "::"
 
@@ -35,6 +37,8 @@ public class RealEstateDPR implements Serializable {
 	
 	@Column(name = "land_registry_Area")
 	private int landRegistryArea;
+	
+	private Polygon geometry;
 
 	public int getT_id() {
 		return t_id;
@@ -114,5 +118,13 @@ public class RealEstateDPR implements Serializable {
 
 	public void setLandRegistryArea(int landRegistryArea) {
 		this.landRegistryArea = landRegistryArea;
+	}
+	
+	public Polygon getGeometry() {
+		return geometry;
+	}
+	
+	public void setGeometry(Polygon geometry) {
+		this.geometry = geometry;
 	}
 }
