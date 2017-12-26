@@ -1,5 +1,7 @@
 package ch.so.agi.oereb.web.controllers;
 
+import java.net.MalformedURLException;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import ch.so.agi.oereb.web.services.ExtractService;
+import ch.so.agi.oereb.web.utils.WebMapServiceException;
 
 @RestController
 public class GetExtractByIdController {
@@ -48,7 +51,7 @@ public class GetExtractByIdController {
 			@RequestParam(value = "LANG", required = false, defaultValue = "de") String lang,
 			@RequestParam(value = "TOPIS", required = false, defaultValue = "ALL") String topics,
 			@RequestParam(value = "WITHIMAGES", required = false) String withImages) 
-					throws DatatypeConfigurationException {
+					throws DatatypeConfigurationException, WebMapServiceException {
 		
 		log.info("*****************");
 		log.info(withImages);
@@ -77,7 +80,8 @@ public class GetExtractByIdController {
 		//return ResponseEntity.ok().body(outputMsg.toString());
 	}
 	
-	@ExceptionHandler({IllegalArgumentException.class, DatatypeConfigurationException.class})
+	@ExceptionHandler({IllegalArgumentException.class, DatatypeConfigurationException.class,
+		WebMapServiceException.class})
 	private ResponseEntity<?> handleBadRequests(Exception e) {
 		log.error(e.getMessage());		
 		return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);

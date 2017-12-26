@@ -28,12 +28,17 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
+	maven { url "http://download.osgeo.org/webdav/geotools/" } // BEFORE mavenCentral b/c of https://github.com/akhikhl/gretty/issues/322
 	mavenCentral()
 	maven { url "https://repo.spring.io/snapshot" }
 	maven { url "https://repo.spring.io/milestone" }
+	maven { url "http://repo.boundlessgeo.com/main" }	
 }
 
 dependencies {
+	compile group: 'org.geotools', name: 'gt-wms', version: '18.1'
+	compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.4'
+
 	compile('org.springframework.boot:spring-boot-starter-data-jpa') 
 	//compile('org.springframework.boot:spring-boot-starter-data-rest')
 	compile('org.springframework.boot:spring-boot-starter-web')
