@@ -60,6 +60,7 @@ public class WebMapService {
 	 * 
 	 * @param WMS URL (GetMap or GetCapabilities)
 	 */
+	
 	public WebMapService(String wmsUrl) throws WebMapServiceException {		
 		try {	
 			String getCapabilitiesUrl;
