@@ -40,7 +40,7 @@ public class WebMapService {
 	
 	private static final double INCH_MM = 25.4;
 
-	private URL wmsUrl;
+	private URL getCapabilitiesUrl;
 	private WebMapServer wms = null;
 	
 	private String layers = null; // TODO: Should pre-process the layer string since it only works with a single layer.
@@ -54,18 +54,30 @@ public class WebMapService {
 	
 	private String[] getMapIgnoreParameters = {"REQUEST", "STYLES", "SRS", "BBOX", "WIDTH", "HEIGHT", "FORMAT", "LAYERS"};
 
+	/**
+	 * Creates a GeoTools WebMapService object. If a getMap url is used, 
+	 * it will try to convert it to a getCapabilities url.
+	 * 
+	 * @param WMS URL (GetMap or GetCapabilities)
+	 */
 	public WebMapService(String wmsUrl) throws WebMapServiceException {		
-		try {			
-			String getCapabilitiesUrl = getMap2getCapabilities(wmsUrl);
-			log.debug(getCapabilitiesUrl);
-			this.wmsUrl = new URL(getCapabilitiesUrl);
+		try {	
+			String getCapabilitiesUrl;
+			log.info("wmsUrl: " + wmsUrl);
+			if (wmsUrl.toLowerCase().contains("REQUEST=GetCapabilities".toLowerCase())) {
+				getCapabilitiesUrl = wmsUrl;
+			} else {
+				getCapabilitiesUrl = getMap2getCapabilities(wmsUrl);
+			}
+			log.info("getCapabilitiesUrl: " + getCapabilitiesUrl);
+			this.getCapabilitiesUrl = new URL(getCapabilitiesUrl);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
 			throw new WebMapServiceException(e.getMessage());
 		}
 		try {
-			wms = new WebMapServer(this.wmsUrl);
+			wms = new WebMapServer(this.getCapabilitiesUrl);
 		} catch (IOException e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
