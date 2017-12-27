@@ -2,58 +2,54 @@ package ch.so.agi.oereb.web.utils;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import org.geotools.data.ows.Layer;
-import org.geotools.data.ows.WMSCapabilities;
-import org.geotools.data.wms.WebMapServer;
-import org.geotools.data.wms.request.GetMapRequest;
-import org.geotools.data.wms.response.GetMapResponse;
-import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
-import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 
+@Service
 public class WebMapService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	private static final double INCH_MM = 25.4;
-
-	private URL getCapabilitiesUrl;
-	private WebMapServer wms = null;
+	private static final int SRS = 2056;
+		
+	private String wmsBbox;
+	private double wmsWidth;
+	private double wmsHeight;
+	private String outputFormat = "png";	
 	
-	private String layers = null; // TODO: Should pre-process the layer string since it only works with a single layer.
-	private String format = "image/png";
-	
-	private int dpi = 96; // TODO: must be higher!
+	private int dpi = 96; // TODO: Must be higher I guess!
 	private double paperWidthMM = 174; // see "Weisung"
 	private double paperHeightMM = 99; // see "Weisung"
 	private double extractMapRatio = paperWidthMM / paperHeightMM; 
 	private double bboxExpandScale = 1.1;
 	
-	private String[] getMapIgnoreParameters = {"REQUEST", "STYLES", "SRS", "BBOX", "WIDTH", "HEIGHT", "FORMAT", "LAYERS"};
-
 	/**
 	 * Creates a GeoTools WebMapService object. If a getMap url is used, 
 	 * it will try to convert it to a getCapabilities url.
@@ -61,77 +57,77 @@ public class WebMapService {
 	 * @param WMS URL (GetMap or GetCapabilities)
 	 */
 	
-	public WebMapService(String wmsUrl) throws WebMapServiceException {		
-		try {	
-			String getCapabilitiesUrl;
-			log.info("wmsUrl: " + wmsUrl);
-			if (wmsUrl.toLowerCase().contains("REQUEST=GetCapabilities".toLowerCase())) {
-				getCapabilitiesUrl = wmsUrl;
-			} else {
-				getCapabilitiesUrl = getMap2getCapabilities(wmsUrl);
-			}
-			log.info("getCapabilitiesUrl: " + getCapabilitiesUrl);
-			this.getCapabilitiesUrl = new URL(getCapabilitiesUrl);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
-		}
+	public byte[] getImage(String wmsUrl, Envelope parcelExtent) throws WebMapServiceException {
+		// Do some math first: We need to calculate the WIDTH and HEIGHT and BBOX 
+		// for the getMap request.
+		calculateGetMapParameters(parcelExtent);
+		
+		// Now create the getMap request by copying and replacing (some) query parameters.
+		String getMapRequest = createGetMapRequest(wmsUrl);
+		
+		log.info(getMapRequest);
+		System.out.println(getMapRequest);
+		
+		// Request the image and return it as byte[], which is needed by JAXB.
+		CloseableHttpClient httpclient = HttpClients.custom()
+				.setRedirectStrategy(new LaxRedirectStrategy()) // adds HTTP REDIRECT support to GET and POST methods 
+				.build();
 		try {
-			wms = new WebMapServer(this.getCapabilitiesUrl);
-		} catch (IOException e) {
+			HttpGet get = new HttpGet(new URL(getMapRequest).toURI()); 
+			CloseableHttpResponse response = httpclient.execute(get);
+			InputStream inputStream = response.getEntity().getContent();
+			BufferedImage image = ImageIO.read(inputStream);
+			
+			// Save image to local file system.
+			// For debugging.
+//			Path tmpDirectory = Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), "oereb");
+//			Path outputfilePath = Paths.get(tmpDirectory.toString(), "image.png");
+//			ImageIO.write(image, "png", outputfilePath.toFile());
+//			log.info(outputfilePath.toString());
+
+			// Save image as byte[]
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(image, outputFormat, baos); 
+			baos.flush();
+			byte[] imageInByte = baos.toByteArray();
+			baos.close();
+			return imageInByte;
+		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
 			throw new WebMapServiceException(e.getMessage());
-		} catch (ServiceException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
-		} catch (SAXException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
-		}		
+		} finally {
+			IOUtils.closeQuietly(httpclient);
+		}
 	}
 	
-	public void getMap(String layers, Envelope extent) throws URISyntaxException {
-		this.layers = layers;
-	}
+	private void calculateGetMapParameters(Envelope parcelExtent) {
+		wmsWidth = this.paperWidthMM / this.INCH_MM * dpi;
+		wmsHeight = wmsWidth / extractMapRatio;
 
-	
-	public byte[] getMap(Envelope extent) throws URISyntaxException, WebMapServiceException {		
-		GetMapRequest request = wms.createGetMapRequest();
-		request.addLayer(layers, ""); //TODO: Works with one layer and with one only!
-		request.setFormat(this.format);
-		request.setTransparent(true);
-		request.setSRS("EPSG:2056"); //TODO: do not hardcode?!
-
-		double width = this.paperWidthMM / this.INCH_MM * dpi;
-		request.setDimensions(String.valueOf(width), String.valueOf(width / extractMapRatio));
-
-		double parcelExtentRatio = extent.getWidth() / extent.getHeight();
+		double parcelExtentRatio = parcelExtent.getWidth() / parcelExtent.getHeight();
 		double minX;
 		double minY;
 		double maxX;
 		double maxY;
-		double midpointX = extent.getMinX() + extent.getWidth()/2;
-		double midpointY = extent.getMinY() + extent.getHeight()/2;
-		
+		double midpointX = parcelExtent.getMinX() + parcelExtent.getWidth()/2;
+		double midpointY = parcelExtent.getMinY() + parcelExtent.getHeight()/2;
+
 		log.info("parcelExtentRatio: " + String.valueOf(parcelExtentRatio));
 		
 		// TODO: TEST THIS CAREFULLY!!!!!!!!!!
 		if (extractMapRatio < parcelExtentRatio) {
-			minX = midpointX - extent.getWidth()/2;
-			minY = midpointY - (extent.getWidth()/2 / extractMapRatio);
+			minX = midpointX - parcelExtent.getWidth()/2;
+			minY = midpointY - (parcelExtent.getWidth()/2 / extractMapRatio);
 			
-			maxX = midpointX + extent.getWidth()/2;
-			maxY = midpointY + (extent.getWidth()/2 / extractMapRatio);
+			maxX = midpointX + parcelExtent.getWidth()/2;
+			maxY = midpointY + (parcelExtent.getWidth()/2 / extractMapRatio);
 		} else {
-			minX = midpointX - extent.getHeight()/2 * extractMapRatio;
-			minY = midpointY - (extent.getHeight()/2 );
+			minX = midpointX - parcelExtent.getHeight()/2 * extractMapRatio;
+			minY = midpointY - (parcelExtent.getHeight()/2 );
 			
-			maxX = midpointX + extent.getHeight()/2 * extractMapRatio;
-			maxY = midpointY + (extent.getHeight()/2 );
+			maxX = midpointX + parcelExtent.getHeight()/2 * extractMapRatio;
+			maxY = midpointY + (parcelExtent.getHeight()/2 );
 		}
 		
 		// Must be the same as extractMapRatio.
@@ -144,59 +140,15 @@ public class WebMapService {
 		double expandDistance = (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX()) * bboxExpandScale - (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX());
 		bboxEnvelope.expandBy(expandDistance, expandDistance / extractMapRatio);
 				
-		String bbox = bboxEnvelope.getMinX() + "," + bboxEnvelope.getMinY() + "," + bboxEnvelope.getMaxX()  + "," + bboxEnvelope.getMaxY();
-		request.setBBox(bbox);
-		
-//		log.info(request.getFinalURL().toString());
-//		System.out.println(request.getFinalURL().toString());
-		
-		try {
-			GetMapResponse response = (GetMapResponse) wms.issueRequest(request);
-			BufferedImage image = ImageIO.read(response.getInputStream());
-
-			// Save image as byte array (needed by jaxb)
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(image, "png", baos);
-			baos.flush();
-			byte[] imageInByte = baos.toByteArray();
-			baos.close();
-			return imageInByte;
-			
-			// Save image to base64
-//		    final ByteArrayOutputStream os = new ByteArrayOutputStream();
-//	        ImageIO.write(image, "png", Base64.getEncoder().wrap(os));
-//	        String base64img = os.toString(StandardCharsets.UTF_8.name());
-//	        return base64img;
-			
-			// Save image to local file system.
-//			Path tmpDirectory = Files.createTempDirectory(Paths.get(System.getProperty("java.io.tmpdir")), "oereb");
-//			Path outputfilePath = Paths.get(tmpDirectory.toString(), "image.png");
-//			ImageIO.write(image, "png", outputfilePath.toFile());
-//			log.info(outputfilePath.toString());
-			
-		} catch (org.geotools.ows.ServiceException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
-		} catch (IOException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
-		}
+		wmsBbox = bboxEnvelope.getMinX() + "," + bboxEnvelope.getMinY() + "," + bboxEnvelope.getMaxX()  + "," + bboxEnvelope.getMaxY();
 	}
 	
-	/*
-	 * Alles, was explizit zu einem GetMap-Request gehört, wird ignoriert.
-	 * REQUEST-Type wird zu GetCapabilities.
-	 * Alles andere wird weiterverwendet.
-	 */
-	
-	private String getMap2getCapabilities(String getMapUrl) throws WebMapServiceException {
+	private String createGetMapRequest(String wmsUrl) throws WebMapServiceException {
 		Charset charset = Charset.forName("UTF-8");
 		List<org.apache.http.NameValuePair> params;
 		URI getMapUri;
 		try {
-			getMapUri = new URI(getMapUrl);
+			getMapUri = new URI(wmsUrl);
 			params = URLEncodedUtils.parse(getMapUri, charset);
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
@@ -206,46 +158,59 @@ public class WebMapService {
 		
 		String schema = getMapUri.getScheme();
 		String host = getMapUri.getHost();
+		String path = getMapUri.getPath();
 		
 		String port = "";
 		if (getMapUri.getPort() > 0) {
 			port = String.valueOf(getMapUri.getPort());
 		}
 				
-		StringBuilder getCapabilitiesUrlBuilder = new StringBuilder();
-		getCapabilitiesUrlBuilder.append(schema);
-		getCapabilitiesUrlBuilder.append("://");
-		getCapabilitiesUrlBuilder.append(host);
-		
-		if (!port.equalsIgnoreCase("")) {
-			getCapabilitiesUrlBuilder.append(":").append(port);
-		}
+		StringBuilder getMapRequestBuilder = new StringBuilder();
+		getMapRequestBuilder.append(schema);
+		getMapRequestBuilder.append("://");
+		getMapRequestBuilder.append(host);
+		getMapRequestBuilder.append(path);
 
 		StringBuilder queryBuilder = new StringBuilder();
 		int idx = 0;
 		for (org.apache.http.NameValuePair param : params) {
-			if (Arrays.asList(getMapIgnoreParameters).contains(param.getName().toUpperCase())) {
-				if (param.getName().equalsIgnoreCase("LAYERS")) {
-					this.layers = param.getValue();
-				} 
-				if (param.getName().equalsIgnoreCase("FORMAT")) {
-					this.format = param.getValue();
-				}
+			if (idx > 0) {
+				queryBuilder.append("&");
+			}
+			if (param.getName().equalsIgnoreCase("SRS") || param.getName().equalsIgnoreCase("CRS")) {
+				queryBuilder.append(param.getName()).append("=").append("EPSG:"+SRS);
+			} else if (param.getName().equalsIgnoreCase("BBOX")) {
+				queryBuilder.append(param.getName()).append("=").append(wmsBbox);
+			} else if (param.getName().equalsIgnoreCase("WIDTH")) {
+				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsWidth).intValue()); //TODO: QGIS server 1.8 cannot deal w/ doubles?
+			} else if (param.getName().equalsIgnoreCase("HEIGHT")) {
+				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsHeight).intValue());
 			} else {
-				if (idx > 0) {
-					queryBuilder.append("&");
+				if (param.getName().equalsIgnoreCase("FORMAT")) {
+					String[] parts = param.getValue().split("/");
+					outputFormat = parts[1].toLowerCase();
 				}
 				queryBuilder.append(param.getName()).append("=").append(param.getValue());
-			}
+			}		
 			idx++;
 		}
-
-		queryBuilder.append("&SERVICE=GetCapabilities");
-		
-		if (queryBuilder.toString() != null) {
-			getCapabilitiesUrlBuilder.append("?").append(queryBuilder);
-		}
 	
-		return getCapabilitiesUrlBuilder.toString();
+		// QGIS server sucks... sorry. Not even URLEncoder.encode() works.
+		// This has to better!!!!
+		String queryString = queryBuilder.toString().replaceAll("/", "%2F").replaceAll(" ", "%20");
+//		try {
+//			queryString = URLEncoder.encode(queryBuilder.toString(), "UTF-8");
+//		} catch (UnsupportedEncodingException e) {
+//			e.printStackTrace();
+//			log.error(e.getMessage());
+//			throw new WebMapServiceException(e.getMessage());
+//		}
+		
+		getMapRequestBuilder.append("?").append(queryString);
+		
+		return getMapRequestBuilder.toString();
 	}	
 }
+
+
+

@@ -1,7 +1,5 @@
 package ch.so.agi.oereb.web.services;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -33,7 +31,6 @@ import ch.so.agi.oereb.web.repositories.ThemeRepository;
 import ch.so.agi.oereb.web.utils.WebMapService;
 import ch.so.agi.oereb.web.utils.WebMapServiceException;
 
-import org.hibernate.service.spi.ServiceException;
 
 // TODO: Exception handling!!!
 
@@ -46,9 +43,12 @@ public class ExtractServiceImpl implements ExtractService {
 	
 	@Autowired
 	private ThemeRepository themeRepository;
+	
+	@Autowired
+	private Environment env;
 
 	@Override
-	public GetExtractByIdResponseType getDummy(String egrid, boolean isReduced) throws DatatypeConfigurationException, WebMapServiceException {
+	public GetExtractByIdResponseType getDummy(String egrid, boolean isReduced) throws DatatypeConfigurationException, WebMapServiceException {		
 		ch.admin.geo.schemas.v_d.oereb._1_0.extract.ObjectFactory objectFactoryExtract = 
 				new ch.admin.geo.schemas.v_d.oereb._1_0.extract.ObjectFactory();
 		
@@ -82,30 +82,23 @@ public class ExtractServiceImpl implements ExtractService {
 		
 		// TODO
 		/*
-		 * 
-		 *  
 		 *  This is for testing wms requests and base64Binary stuff.
-		 *  GetCapabilities information is missing?! How can this be determined rock solid?
-		 *  
 		 */
-//		String wmsUrl = "http://geoweb.so.ch/wms/grundbuchplan-nf?VERSION=1.1.1&Request=GetCapabilities&Service=WMS";
 		
 		// This is the url we can get from the data (Transferstruktur).
-		String wmsUrl = "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&STYLES=default&SRS=EPSG:21781&BBOX=475000,60000,845000,310000&WIDTH=740&HEIGHT=500&FORMAT=image/png&LAYERS=ch.bazl.kataster-belasteter-standorte-zivilflugplaetze.oereb";
-		String layers = "ch.bazl.kataster-belasteter-standorte-zivilflugplaetze.oereb";
+//		String wmsUrl = "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&STYLES=default&SRS=EPSG:21781&BBOX=475000,60000,845000,310000&WIDTH=740&HEIGHT=500&FORMAT=image/png&LAYERS=ch.bazl.kataster-belasteter-standorte-zivilflugplaetze.oereb";
+		String wmsUrl = env.getProperty("oereb.wms.plan-for-land-register");
 		
-		WebMapService wms = new WebMapService(wmsUrl);
-		byte[] image = null;
-		try {
-			image = wms.getMap(realEstateDPREntity.getGeometry().getEnvelopeInternal());
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
+		if (wmsUrl == null) {
+			throw new WebMapServiceException("oereb.wms.plan-for-land-register property not found.");
 		}
 		
-		// Ist inhaltlich non-sense. -> Gehört zu den Eigentumsbeschränkungen.
-		// Es kommt aber unter <Image> ein base64-String. Not too bad...
+		// TODO: create a "RasterImage" object with some meta information (e.g. extent)
+		WebMapService wms = new WebMapService();		
+		byte[] image = null;
+		image = wms.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
+		
+		// Es kommt unter <Image> ein base64-String. Not too bad...
 		Map map = objectFactoryExtractData.createMap();
 		map.setImage(image);
 		realEstateDPR.setPlanForLandRegisterMainPage(map);
@@ -123,7 +116,7 @@ public class ExtractServiceImpl implements ExtractService {
 		log.info("CreationDate: " + creationDate);
 		
 		/* 
-		 * <Extract.(Not)ConcerncedTheme>
+		 * <Extract.(Not)ConcernedTheme>
 		 */
 		Polygon geometry = realEstateDPREntity.getGeometry();
 		List<ch.so.agi.oereb.web.domains.Theme> themeEntityList = themeRepository.findThemesByGeometry(geometry);
