@@ -172,8 +172,8 @@ public class ExtractServiceImpl implements ExtractService {
 			theme.setCode(themeObj.getTheme());
 			
 			// TODO: woher stammt das?
-			localisedText.setLanguage(LanguageCode.fromValue("de"));
-			localisedText.setText("Woher nehmen, wenn nicht stehlen?");
+			localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
+			localisedText.setText(themeObj.getTitle());
 			theme.setText(localisedText);
 
 			if (concerned) {

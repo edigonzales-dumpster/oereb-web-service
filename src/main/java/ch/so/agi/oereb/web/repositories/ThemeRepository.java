@@ -13,6 +13,6 @@ import ch.so.agi.oereb.web.domains.Theme;
 public interface ThemeRepository extends JpaRepository<Theme, Long> {
 	
     @Query(nativeQuery = true)
-	List<Theme> findThemesByGeometry(@Param("geometry") Polygon geometry);
+	List<Theme> findThemesByGeometry(@Param("limit") Polygon limit);
 
 }

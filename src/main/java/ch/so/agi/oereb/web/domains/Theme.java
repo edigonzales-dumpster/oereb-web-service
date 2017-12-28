@@ -20,6 +20,7 @@ public class Theme implements Serializable {
 	
 	private boolean concerned;
 	
+	private String title;
 	//private Polygon geometry;
 
 	public int getT_id() {
@@ -55,4 +56,12 @@ public class Theme implements Serializable {
 		this.geometry = geometry;
 	}
 	*/
+	
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
 }
