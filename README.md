@@ -18,8 +18,16 @@ OEREB web service implementation with Spring Boot.
 
 * [http://oereb-web-service-dev-env.eu-central-1.elasticbeanstalk.com/oereb/getegrid/xml/?XY=2598098,1225627](http://oereb-web-service-dev-env.eu-central-1.elasticbeanstalk.com/oereb/getegrid/xml/?XY=2598098,1225627)
 
+### KbS öffentlicher Verkehr
+
+* [http://localhost:8888/oereb/getegrid/xml/SO0200002601/992](http://localhost:8888/oereb/getegrid/xml/SO0200002601/992)
+* [http://localhost:8888/oereb/extract/reduced/xml/geometry/CH870679603216](http://localhost:8888/oereb/extract/reduced/xml/geometry/CH870679603216)
+* [http://oereb-web-service-dev-env.eu-central-1.elasticbeanstalk.com/oereb/extract/reduced/xml/geometry/CH870679603216](http://oereb-web-service-dev-env.eu-central-1.elasticbeanstalk.com/oereb/extract/reduced/xml/geometry/CH870679603216)
+
 ## Running OEREB web service
 `docker run -p 8888:8888 -e OEREB_DB_PASS=XXXXXXXXXXXX sogis/oereb-web-service:latest`
 
 ## Map
 * [https://s.geo.admin.ch/77bda69701](https://s.geo.admin.ch/77bda69701)
+* [https://s.geo.admin.ch/77c9c106ab](https://s.geo.admin.ch/77c9c106ab)
+
