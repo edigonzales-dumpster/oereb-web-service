@@ -49,15 +49,8 @@ public class WebMapService {
 	private double paperHeightMM = 99; // see "Weisung"
 	private double extractMapRatio = paperWidthMM / paperHeightMM; 
 	private double bboxExpandScale = 1.1;
-	
-	/**
-	 * Creates a GeoTools WebMapService object. If a getMap url is used, 
-	 * it will try to convert it to a getCapabilities url.
-	 * 
-	 * @param WMS URL (GetMap or GetCapabilities)
-	 */
-	
-	public byte[] getImage(String wmsUrl, Envelope parcelExtent) throws WebMapServiceException {
+		
+	public WMSImage getImage(String wmsUrl, Envelope parcelExtent) throws WebMapServiceException {
 		// Do some math first: We need to calculate the WIDTH and HEIGHT and BBOX 
 		// for the getMap request.
 		calculateGetMapParameters(parcelExtent);
@@ -91,7 +84,17 @@ public class WebMapService {
 			baos.flush();
 			byte[] imageInByte = baos.toByteArray();
 			baos.close();
-			return imageInByte;
+			
+			WMSImage wmsImage =  new WMSImage();
+			wmsImage.setImage(imageInByte);
+			
+			String parts[] = wmsBbox.split(",");			
+			wmsImage.setMinX(Double.valueOf(parts[0]));
+			wmsImage.setMinY(Double.valueOf(parts[1]));
+			wmsImage.setMaxX(Double.valueOf(parts[2]));
+			wmsImage.setMaxY(Double.valueOf(parts[3]));
+			
+			return wmsImage;
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
@@ -195,6 +198,7 @@ public class WebMapService {
 			idx++;
 		}
 	
+		// TODO:
 		// QGIS server sucks... sorry. Not even URLEncoder.encode() works.
 		// This has to better!!!!
 		String queryString = queryBuilder.toString().replaceAll("/", "%2F").replaceAll(" ", "%20");
