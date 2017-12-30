@@ -33,6 +33,7 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LocalisedText;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Map;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateType;
+import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RestrictionOnLandownership;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
 import ch.so.agi.oereb.web.domains.Egrid;
 import ch.so.agi.oereb.web.repositories.RealEstateDPRRepository;
@@ -47,6 +48,8 @@ import net.opengis.gml.v_3_2_1.MultiSurfaceType;
 import net.opengis.gml.v_3_2_1.PointPropertyType;
 import net.opengis.gml.v_3_2_1.PointType;
 import net.opengis.gml.v_3_2_1.PolygonType;
+import net.opengis.gml.v_3_2_1.SurfacePropertyType;
+import net.opengis.gml.v_3_2_1.SurfaceType;
 
 
 // TODO: Exception handling!!!
@@ -107,7 +110,7 @@ public class ExtractServiceImpl implements ExtractService {
 		MultiSurfaceType limitMultiSurfaceType = (MultiSurfaceType) converter.createGeometryType(multiLimit);
 		limitMultiSurfaceType.setId(UUID.randomUUID().toString());
 		MultiSurfacePropertyType limitMultiSurfacePropertyType = objectFactoryGml.createMultiSurfacePropertyType();
-		limitMultiSurfacePropertyType.setMultiSurface(limitMultiSurfaceType);
+		limitMultiSurfacePropertyType.setMultiSurface(limitMultiSurfaceType);		
 		realEstateDPR.setLimit(limitMultiSurfacePropertyType);
 		
 		// TODO: This is for testing wms requests and base64Binary stuff.
@@ -147,6 +150,14 @@ public class ExtractServiceImpl implements ExtractService {
 		
 		realEstateDPR.setPlanForLandRegisterMainPage(map);
 		
+		/* <Extract.RealEstate_DPR.RestrictionOnLandownership> */
+		RestrictionOnLandownership restriction = objectFactoryExtractData.createRestrictionOnLandownership();
+		
+		
+		
+		/* </Extract.RealEstate_DPR.RestrictionOnLandownership> */
+
+		
 		extract.setRealEstate(realEstateDPR);
 		/* </Extract.RealEstate_DPR> */
 		
@@ -155,7 +166,6 @@ public class ExtractServiceImpl implements ExtractService {
 		DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 		XMLGregorianCalendar creationDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(cal);
 		extract.setCreationDate(creationDate);
-		log.info("CreationDate: " + creationDate);
 		/* </Extract.CreationDate> */		
 
 		/*  <Extract.(Not)ConcernedTheme> */
@@ -166,12 +176,10 @@ public class ExtractServiceImpl implements ExtractService {
 			ch.so.agi.oereb.web.domains.Theme themeObj = it.next();
 			boolean concerned = themeObj.isConcerned();
 			
-			ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme theme = objectFactoryExtractData.createTheme();
-			LocalisedText localisedText = objectFactoryExtractData.createLocalisedText();
-			
+			ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme theme = objectFactoryExtractData.createTheme();			
 			theme.setCode(themeObj.getTheme());
 			
-			// TODO: woher stammt das?
+			LocalisedText localisedText = objectFactoryExtractData.createLocalisedText();
 			localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
 			localisedText.setText(themeObj.getTitle());
 			theme.setText(localisedText);

@@ -58,7 +58,7 @@ public class WebMapService {
 		// Now create the getMap request by copying and replacing (some) query parameters.
 		String getMapRequest = createGetMapRequest(wmsUrl);
 		
-		log.info(getMapRequest);
+		log.debug(getMapRequest);
 		System.out.println(getMapRequest);
 		
 		// Request the image and return it as byte[], which is needed by JAXB.
@@ -116,7 +116,7 @@ public class WebMapService {
 		double midpointX = parcelExtent.getMinX() + parcelExtent.getWidth()/2;
 		double midpointY = parcelExtent.getMinY() + parcelExtent.getHeight()/2;
 
-		log.info("parcelExtentRatio: " + String.valueOf(parcelExtentRatio));
+		log.debug("parcelExtentRatio: " + String.valueOf(parcelExtentRatio));
 		
 		// TODO: TEST THIS CAREFULLY!!!!!!!!!!
 		if (extractMapRatio < parcelExtentRatio) {
