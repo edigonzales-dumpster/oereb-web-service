@@ -1,15 +1,15 @@
 package ch.so.agi.oereb.web.utils;
 
+import com.vividsolutions.jts.geom.Envelope;
+
 public class WMSImage {
 	private byte[] image;
 	
-	private double minX;
-
-	private double minY;
-
-	private double maxX;
-
-	private double maxY;
+	private Envelope envelope;
+	
+	private double scale;
+	
+	private int dpi;
 
 	public byte[] getImage() {
 		return image;
@@ -19,35 +19,35 @@ public class WMSImage {
 		this.image = image;
 	}
 
-	public double getMinX() {
-		return minX;
+	public Envelope getEnvelope() {
+		return envelope;
 	}
 
-	public void setMinX(double minX) {
-		this.minX = minX;
+	public void setEnvelope(Envelope envelope) {
+		this.envelope = envelope;
+	}
+	
+	public void setEnvelope(double minX, double maxX, double minY, double maxY) {
+		this.envelope = new Envelope(minX, maxX, minY, maxY);
 	}
 
-	public double getMinY() {
-		return minY;
+	public double getScale() {
+		return scale;
 	}
 
-	public void setMinY(double minY) {
-		this.minY = minY;
+	public void setScale(double scale) {
+		this.scale = scale;
+	}
+	
+	public void setScale(double realWorldLengthM, double mapLengthM) {
+		this.scale = realWorldLengthM / mapLengthM;
 	}
 
-	public double getMaxX() {
-		return maxX;
+	public int getDpi() {
+		return dpi;
 	}
 
-	public void setMaxX(double maxX) {
-		this.maxX = maxX;
-	}
-
-	public double getMaxY() {
-		return maxY;
-	}
-
-	public void setMaxY(double maxY) {
-		this.maxY = maxY;
+	public void setDpi(int dpi) {
+		this.dpi = dpi;
 	}
 }

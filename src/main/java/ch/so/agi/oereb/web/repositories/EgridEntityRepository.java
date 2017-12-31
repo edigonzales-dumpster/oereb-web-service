@@ -8,24 +8,24 @@ import org.springframework.data.repository.query.Param;
 
 import com.vividsolutions.jts.geom.Point;
 
-import ch.so.agi.oereb.web.domains.Egrid;
+import ch.so.agi.oereb.web.domains.EgridEntity;
 
-public interface EgridRepository extends JpaRepository<Egrid, Long> {
+public interface EgridEntityRepository extends JpaRepository<EgridEntity, Long> {
 	
     @Query(nativeQuery = true)
-	List<Egrid> findByNumberAndIdentdn(@Param("number") String number, @Param("identdn") String identdn);
+	List<EgridEntity> getEgridByNumberAndIdentdn(@Param("number") String number, @Param("identdn") String identdn);
 
     @Query(nativeQuery = true)
-	List<Egrid> findByXY(@Param("point") Point point);
+	List<EgridEntity> getEgridByXY(@Param("point") Point point);
     
     @Query(nativeQuery = true)
-	List<Egrid> findByGNSS(@Param("point") Point point);
+	List<EgridEntity> getEgridByGNSS(@Param("point") Point point);
     
     @Query(nativeQuery = true)
-    List<Egrid> getEgridByPostalcodeAndLocalisationAndHousingNumber(@Param("postalcode") int postalcode, 
+    List<EgridEntity> getEgridByPostalcodeAndLocalisationAndHousingNumber(@Param("postalcode") int postalcode, 
     		@Param("localisation") String localisation, @Param("housing_number") String housing_number);
     
     @Query(nativeQuery = true)
-    List<Egrid> getEgridByPostalcodeAndLocalisation(@Param("postalcode") int postalcode, 
+    List<EgridEntity> getEgridByPostalcodeAndLocalisation(@Param("postalcode") int postalcode, 
     		@Param("localisation") String localisation);    
 }

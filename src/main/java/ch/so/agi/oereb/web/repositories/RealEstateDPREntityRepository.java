@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import ch.so.agi.oereb.web.domains.RealEstateDPR;;
+import ch.so.agi.oereb.web.domains.RealEstateDPREntity;;
 
 // TODO: gibt es etwas wie "find only first oder one"?
-public interface RealEstateDPRRepository extends JpaRepository<RealEstateDPR, Long> {
+public interface RealEstateDPREntityRepository extends JpaRepository<RealEstateDPREntity, Long> {
 
     @Query(nativeQuery = true)
-	RealEstateDPR findOneByEgrid(@Param("egrid") String egrid);
+	RealEstateDPREntity findOneByEgrid(@Param("egrid") String egrid);
 
 }

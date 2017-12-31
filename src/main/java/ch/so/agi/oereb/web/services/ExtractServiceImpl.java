@@ -35,9 +35,11 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateType;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RestrictionOnLandownership;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
-import ch.so.agi.oereb.web.domains.Egrid;
-import ch.so.agi.oereb.web.repositories.RealEstateDPRRepository;
-import ch.so.agi.oereb.web.repositories.ThemeRepository;
+import ch.so.agi.oereb.web.domains.EgridEntity;
+import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
+import ch.so.agi.oereb.web.domains.ThemeEntity;
+import ch.so.agi.oereb.web.repositories.RealEstateDPREntityRepository;
+import ch.so.agi.oereb.web.repositories.ThemeEntityRepository;
 import ch.so.agi.oereb.web.utils.WMSImage;
 import ch.so.agi.oereb.web.utils.WebMapService;
 import ch.so.agi.oereb.web.utils.WebMapServiceException;
@@ -59,13 +61,16 @@ public class ExtractServiceImpl implements ExtractService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 		
 	@Autowired
-	private RealEstateDPRRepository realEstateDPRRepository;
+	private RealEstateDPREntityRepository realEstateDPREntityRepository;
 	
 	@Autowired
-	private ThemeRepository themeRepository;
-	
+	private ThemeEntityRepository themeEntityRepository;
+		
 	@Autowired
 	private Environment env;
+	
+	@Autowired
+	private WebMapService webMapService;
 
 	@Override
 	public GetExtractByIdResponseType getDummy(String egrid, boolean isReduced) throws DatatypeConfigurationException, WebMapServiceException {		
@@ -76,12 +81,12 @@ public class ExtractServiceImpl implements ExtractService {
 				new ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory();
 		
 		net.opengis.gml.v_3_2_1.ObjectFactory objectFactoryGml = new net.opengis.gml.v_3_2_1.ObjectFactory();
-		
-		GetExtractByIdResponseType extractByIdResponseType = objectFactoryExtract.createGetExtractByIdResponseType();
-		
+				
 		GeometryFactory geometryFactory = new GeometryFactory();
 
 		JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
+
+		GetExtractByIdResponseType extractByIdResponseType = objectFactoryExtract.createGetExtractByIdResponseType();
 
 		/* <Extract> */
 		Extract extract = objectFactoryExtractData.createExtract();
@@ -89,7 +94,7 @@ public class ExtractServiceImpl implements ExtractService {
 		/* <Extract.RealEstate_DPR> */
 		RealEstateDPR realEstateDPR = objectFactoryExtractData.createRealEstateDPR();
 
-		ch.so.agi.oereb.web.domains.RealEstateDPR realEstateDPREntity = realEstateDPRRepository.findOneByEgrid(egrid);
+		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.findOneByEgrid(egrid);
 		
 		realEstateDPR.setNumber(realEstateDPREntity.getNumber());
 		realEstateDPR.setIdentDN(realEstateDPREntity.getIdentdn());
@@ -122,9 +127,8 @@ public class ExtractServiceImpl implements ExtractService {
 			throw new WebMapServiceException("oereb.wms.plan-for-land-register property not found.");
 		}
 		
-		WebMapService wms = new WebMapService();		
 		WMSImage wmsImage = null;
-		wmsImage = wms.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
+		wmsImage = webMapService.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
 		
 		// Verified base64 string with https://codebeautify.org/base64-to-image-converter -> There is really an image :-)
 		Map map = objectFactoryExtractData.createMap();
@@ -132,7 +136,7 @@ public class ExtractServiceImpl implements ExtractService {
 		
 		// Set extent of image.
 		// Converters from https://github.com/bjornharrtell/ogc-tools		
-		Point minPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getMinX(), wmsImage.getMinY()));
+		Point minPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMinX(), wmsImage.getEnvelope().getMinY()));
 		minPnt.setSRID(2056); // TODO
 		PointType minPointType = (PointType) converter.createGeometryType(minPnt);
 		minPointType.setId(UUID.randomUUID().toString());
@@ -140,7 +144,7 @@ public class ExtractServiceImpl implements ExtractService {
 		minPointPropertyType.setPoint(minPointType);
 		map.setMinNS95(minPointPropertyType);
 
-		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getMaxX(), wmsImage.getMaxY()));
+		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxX()));
 		maxPnt.setSRID(2056); // TODO
 		PointType maxPointType = (PointType) converter.createGeometryType(maxPnt);
 		maxPointType.setId(UUID.randomUUID().toString());
@@ -170,10 +174,10 @@ public class ExtractServiceImpl implements ExtractService {
 
 		/*  <Extract.(Not)ConcernedTheme> */
 		Polygon geometry = realEstateDPREntity.getGeometry();
-		List<ch.so.agi.oereb.web.domains.Theme> themeEntityList = themeRepository.findThemesByGeometry(geometry);
+		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(geometry);
 		
-		for (Iterator<ch.so.agi.oereb.web.domains.Theme> it = themeEntityList.iterator(); it.hasNext(); ) {
-			ch.so.agi.oereb.web.domains.Theme themeObj = it.next();
+		for (Iterator<ThemeEntity> it = themeEntityList.iterator(); it.hasNext(); ) {
+			ThemeEntity themeObj = it.next();
 			boolean concerned = themeObj.isConcerned();
 			
 			ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme theme = objectFactoryExtractData.createTheme();			

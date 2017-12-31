@@ -8,11 +8,11 @@ import org.springframework.data.repository.query.Param;
 
 import com.vividsolutions.jts.geom.Polygon;
 
-import ch.so.agi.oereb.web.domains.Theme;
+import ch.so.agi.oereb.web.domains.ThemeEntity;
 
-public interface ThemeRepository extends JpaRepository<Theme, Long> {
+public interface ThemeEntityRepository extends JpaRepository<ThemeEntity, Long> {
 	
     @Query(nativeQuery = true)
-	List<Theme> findThemesByGeometry(@Param("limit") Polygon limit);
+	List<ThemeEntity> findThemesByGeometry(@Param("limit") Polygon limit);
 
 }

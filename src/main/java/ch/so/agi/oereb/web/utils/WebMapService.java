@@ -18,7 +18,10 @@ import javax.imageio.ImageIO;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -33,29 +36,43 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
 @Service
-public class WebMapService {
+public class WebMapService implements InitializingBean {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
+	@Autowired
+	private Environment env;
+
 	private static final double INCH_MM = 25.4;
 	private static final int SRS = 2056;
 		
 	private String wmsBbox;
-	private double wmsWidth;
-	private double wmsHeight;
+	private double wmsWidthPx;
+	private double wmsHeightPx;
 	private String outputFormat = "png";	
 	
-	private int dpi = 96; // TODO: Must be higher I guess!
-	private double paperWidthMM = 174; // see "Weisung"
-	private double paperHeightMM = 99; // see "Weisung"
-	private double extractMapRatio = paperWidthMM / paperHeightMM; 
-	private double bboxExpandScale = 1.1;
+	private int dpi; 
+	private double mapWidthMM;
+	private double mapHeightMM;
+	private double extractMapRatio; 
+	private double mapBlowFactor;
+	
+	@Override
+    public void afterPropertiesSet() throws Exception {
+		dpi = Integer.valueOf(env.getProperty("oereb.extract.static.map.dpi", "96"));
+		
+		mapWidthMM = Double.valueOf(env.getProperty("oereb.extract.static.map.width.mm", "174"));
+		mapHeightMM = Double.valueOf(env.getProperty("oereb.extract.static.map.height.mm", "99"));
+		extractMapRatio = mapWidthMM / mapHeightMM;
+		
+		mapBlowFactor = Double.valueOf(env.getProperty("oereb.extract.static.map.blow-factor", "1.05"));
+    }
 		
 	public WMSImage getImage(String wmsUrl, Envelope parcelExtent) throws WebMapServiceException {
 		// Do some math first: We need to calculate the WIDTH and HEIGHT and BBOX 
-		// for the getMap request.
+		// for the GetMap request.
 		calculateGetMapParameters(parcelExtent);
 		
-		// Now create the getMap request by copying and replacing (some) query parameters.
+		// Now create the GetMap request by copying and replacing (some) query parameters.
 		String getMapRequest = createGetMapRequest(wmsUrl);
 		
 		log.debug(getMapRequest);
@@ -89,10 +106,11 @@ public class WebMapService {
 			wmsImage.setImage(imageInByte);
 			
 			String parts[] = wmsBbox.split(",");			
-			wmsImage.setMinX(Double.valueOf(parts[0]));
-			wmsImage.setMinY(Double.valueOf(parts[1]));
-			wmsImage.setMaxX(Double.valueOf(parts[2]));
-			wmsImage.setMaxY(Double.valueOf(parts[3]));
+			wmsImage.setEnvelope(Double.valueOf(parts[0]), Double.valueOf(parts[2]), Double.valueOf(parts[1]), Double.valueOf(parts[3]));
+			
+			wmsImage.setScale(wmsImage.getEnvelope().getWidth(), mapWidthMM/1000);
+			
+			wmsImage.setDpi(dpi);			
 			
 			return wmsImage;
 		} catch (Exception e) {
@@ -105,8 +123,8 @@ public class WebMapService {
 	}
 	
 	private void calculateGetMapParameters(Envelope parcelExtent) {
-		wmsWidth = this.paperWidthMM / this.INCH_MM * dpi;
-		wmsHeight = wmsWidth / extractMapRatio;
+		wmsWidthPx = mapWidthMM / INCH_MM * dpi;
+		wmsHeightPx = wmsWidthPx / extractMapRatio;
 
 		double parcelExtentRatio = parcelExtent.getWidth() / parcelExtent.getHeight();
 		double minX;
@@ -139,8 +157,8 @@ public class WebMapService {
 		log.debug(String.valueOf("bboxRatio: " + l/h) + " -- extractMapRatio: " + extractMapRatio);
 		
 		// Expand bbox to get a better visual result.
-		Envelope bboxEnvelope = new Envelope(new Coordinate(minX, minY), new Coordinate(maxX, maxY));
-		double expandDistance = (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX()) * bboxExpandScale - (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX());
+		Envelope bboxEnvelope = new Envelope(minX, maxX, minY, maxY);
+		double expandDistance = (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX()) * mapBlowFactor - (bboxEnvelope.getMaxX() - bboxEnvelope.getMinX());
 		bboxEnvelope.expandBy(expandDistance, expandDistance / extractMapRatio);
 				
 		wmsBbox = bboxEnvelope.getMinX() + "," + bboxEnvelope.getMinY() + "," + bboxEnvelope.getMaxX()  + "," + bboxEnvelope.getMaxY();
@@ -185,9 +203,9 @@ public class WebMapService {
 			} else if (param.getName().equalsIgnoreCase("BBOX")) {
 				queryBuilder.append(param.getName()).append("=").append(wmsBbox);
 			} else if (param.getName().equalsIgnoreCase("WIDTH")) {
-				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsWidth).intValue()); //TODO: QGIS server 1.8 cannot deal w/ doubles?
+				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsWidthPx).intValue()); //TODO: QGIS server 1.8 cannot deal w/ doubles?
 			} else if (param.getName().equalsIgnoreCase("HEIGHT")) {
-				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsHeight).intValue());
+				queryBuilder.append(param.getName()).append("=").append(Double.valueOf(wmsHeightPx).intValue());
 			} else {
 				if (param.getName().equalsIgnoreCase("FORMAT")) {
 					String[] parts = param.getValue().split("/");
@@ -199,7 +217,7 @@ public class WebMapService {
 		}
 	
 		// TODO:
-		// QGIS server sucks... sorry. Not even URLEncoder.encode() works.
+		// (Our) QGIS server sucks... sorry. Not even URLEncoder.encode() works.
 		// This has to better!!!!
 		String queryString = queryBuilder.toString().replaceAll("/", "%2F").replaceAll(" ", "%20");
 //		try {

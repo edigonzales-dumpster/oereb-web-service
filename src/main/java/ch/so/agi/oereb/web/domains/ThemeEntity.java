@@ -10,7 +10,7 @@ import com.vividsolutions.jts.geom.Polygon;
 // TODO: Is geometry property needed if it will be used in the query (repository)?
 
 @Entity
-public class Theme implements Serializable {
+public class ThemeEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id

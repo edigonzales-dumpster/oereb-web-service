@@ -12,7 +12,7 @@ import com.vividsolutions.jts.geom.Polygon;
 // but cannot be done with "::"
 
 @Entity
-public class RealEstateDPR implements Serializable {
+public class RealEstateDPREntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id

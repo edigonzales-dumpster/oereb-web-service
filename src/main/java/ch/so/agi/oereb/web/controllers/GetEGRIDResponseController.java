@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +22,7 @@ public class GetEGRIDResponseController {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
     	
 	@Autowired
-	private EgridServiceImpl egridService;
+	private EgridServiceImpl egridEntityService;
 	
 	//200: OK, Antwort konnte erstellt werden
 	//204: Kein Grundstück gefunden 
@@ -39,13 +38,13 @@ public class GetEGRIDResponseController {
 
 		double[] coords = validateCoordinateRequestParam(xy);
 				
-		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByXY(coords[0], coords[1]);
+		GetEGRIDResponseType getEGRIDResponseType = egridEntityService.getEgridByXY(coords[0], coords[1]);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
 			log.warn("No egrid found at: " + xy);
 			return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
 		}
-		return ResponseEntity.ok(egridService.getEgridByXY(coords[0], coords[1]));
+		return ResponseEntity.ok(egridEntityService.getEgridByXY(coords[0], coords[1]));
 		//return ResponseEntity.ok().body("adsf");
 	}
 	
@@ -59,7 +58,7 @@ public class GetEGRIDResponseController {
 			
 		double[] coords = validateCoordinateRequestParam(gnss);
 				
-		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByGNSS(coords[0], coords[1]);
+		GetEGRIDResponseType getEGRIDResponseType = egridEntityService.getEgridByGNSS(coords[0], coords[1]);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
 			log.warn("No egrid found at: " + gnss);
@@ -80,7 +79,7 @@ public class GetEGRIDResponseController {
 		log.debug(identdn);
 		log.debug(number);
 				
-		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByNumberAndIdentDN(number, identdn);
+		GetEGRIDResponseType getEGRIDResponseType = egridEntityService.getEgridByNumberAndIdentDN(number, identdn);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
 			log.warn("No egrid found at: " + identdn + "/" + number);
@@ -100,7 +99,7 @@ public class GetEGRIDResponseController {
 		log.debug(postalcode);
 		log.debug(localisation);
 				
-		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, null);
+		GetEGRIDResponseType getEGRIDResponseType = egridEntityService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, null);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
 			log.warn("No egrid found at: " + postalcode + "/" + localisation);
@@ -122,7 +121,7 @@ public class GetEGRIDResponseController {
 		log.debug(localisation);
 		log.debug(number);
 				
-		GetEGRIDResponseType getEGRIDResponseType = egridService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, number);
+		GetEGRIDResponseType getEGRIDResponseType = egridEntityService.getEgridByPostalcodeAndLocalisationAndNumber(postalcode, localisation, number);
 		
 		if (getEGRIDResponseType.getEgridAndNumberAndIdentDN().size() == 0) {
 			log.warn("No egrid found at: " + postalcode + "/" + localisation + "/" + number);
