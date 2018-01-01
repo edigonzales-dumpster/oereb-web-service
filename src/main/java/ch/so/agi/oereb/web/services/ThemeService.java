@@ -9,9 +9,9 @@ import com.vividsolutions.jts.geom.Polygon;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
 
 public interface ThemeService {
-	List<Theme> findConcernedThemesByGeometry(@Param("limit") Polygon limit);
+	List<Theme> findThemesByEgrid(String egrid, boolean isConcerned);
 
-	List<Theme> findNotConcernedThemesByGeometry(@Param("limit") Polygon limit);
+	List<Theme> findNotConcernedThemesByGeometry(Polygon limit);
 	
-	Theme getThemeObjectByIliCode(@Param("ilicode") String ilicode);
+	Theme getThemeObjectByIliCode(String ilicode);
 }

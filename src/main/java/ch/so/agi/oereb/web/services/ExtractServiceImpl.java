@@ -58,6 +58,9 @@ public class ExtractServiceImpl implements ExtractService {
 	private RealEstateDPREntityRepository realEstateDPREntityRepository;
 				
 	@Autowired
+	private RealEstateDPRService realEstateDPRService;
+	
+	@Autowired
 	private RestrictionOnLandownershipService restrictionService;
 	
 	@Autowired
@@ -74,12 +77,6 @@ public class ExtractServiceImpl implements ExtractService {
 		ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory objectFactoryExtractData =
 				new ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory();
 		
-		net.opengis.gml.v_3_2_1.ObjectFactory objectFactoryGml = new net.opengis.gml.v_3_2_1.ObjectFactory();
-				
-		GeometryFactory geometryFactory = new GeometryFactory();
-
-		JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
-
 		GetExtractByIdResponseType extractByIdResponseType = objectFactoryExtract.createGetExtractByIdResponseType();
 
 		
@@ -87,77 +84,7 @@ public class ExtractServiceImpl implements ExtractService {
 		Extract extract = objectFactoryExtractData.createExtract();
 		
 		/* <Extract.RealEstate_DPR> */
-		RealEstateDPR realEstateDPR = objectFactoryExtractData.createRealEstateDPR();
-
-		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.findOneByEgrid(egrid);
-		
-		realEstateDPR.setNumber(realEstateDPREntity.getNumber());
-		realEstateDPR.setIdentDN(realEstateDPREntity.getIdentdn());
-		realEstateDPR.setEGRID(realEstateDPREntity.getEgrid());
-		realEstateDPR.setType(RealEstateType.valueOf(realEstateDPREntity.getType()));
-		realEstateDPR.setCanton(CantonCode.valueOf(realEstateDPREntity.getCanton()));
-		realEstateDPR.setMunicipality(realEstateDPREntity.getMunicipality());
-		realEstateDPR.setFosNr(Integer.valueOf(realEstateDPREntity.getFosnr()));
-		realEstateDPR.setMetadataOfGeographicalBaseData(realEstateDPREntity.getMetadataOfGeographicalBasedata());
-		realEstateDPR.setLandRegistryArea(realEstateDPREntity.getLandRegistryArea());
-		
-		// Not sure about the encoding...
-		// http://erouault.blogspot.ch/2014/04/gml-madness.html
-		Polygon limit = realEstateDPREntity.getGeometry();
-		Polygon[] polygons = {limit};
-		MultiPolygon multiLimit = geometryFactory.createMultiPolygon(polygons);
-		multiLimit.setSRID(2056); // TODO
-		MultiSurfaceType limitMultiSurfaceType = (MultiSurfaceType) converter.createGeometryType(multiLimit);
-		limitMultiSurfaceType.setId(UUID.randomUUID().toString());
-		MultiSurfacePropertyType limitMultiSurfacePropertyType = objectFactoryGml.createMultiSurfacePropertyType();
-		limitMultiSurfacePropertyType.setMultiSurface(limitMultiSurfaceType);		
-		realEstateDPR.setLimit(limitMultiSurfacePropertyType);
-		
-		// TODO: This is for testing wms requests and base64Binary stuff.
-		// This is the url we can get from the data (Transferstruktur).
-		// String wmsUrl = "https://wms.geo.admin.ch/?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&STYLES=default&SRS=EPSG:21781&BBOX=475000,60000,845000,310000&WIDTH=740&HEIGHT=500&FORMAT=image/png&LAYERS=ch.bazl.kataster-belasteter-standorte-zivilflugplaetze.oereb";
-		String wmsUrl = env.getProperty("oereb.wms.plan-for-land-register");
-		
-		if (wmsUrl == null) {
-			throw new WebMapServiceException("oereb.wms.plan-for-land-register property not found.");
-		}
-		
-		WMSImage wmsImage = null;
-		wmsImage = webMapService.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
-		
-		// Verified base64 string with https://codebeautify.org/base64-to-image-converter -> There is really an image :-)
-		Map map = objectFactoryExtractData.createMap();
-		map.setImage(wmsImage.getImage());
-		
-		// Set extent of image.
-		// Converters from https://github.com/bjornharrtell/ogc-tools		
-		Point minPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMinX(), wmsImage.getEnvelope().getMinY()));
-		minPnt.setSRID(2056); // TODO
-		PointType minPointType = (PointType) converter.createGeometryType(minPnt);
-		minPointType.setId(UUID.randomUUID().toString());
-		PointPropertyType minPointPropertyType = objectFactoryGml.createPointPropertyType();
-		minPointPropertyType.setPoint(minPointType);
-		map.setMinNS95(minPointPropertyType);
-
-		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxY()));
-		maxPnt.setSRID(2056); // TODO
-		PointType maxPointType = (PointType) converter.createGeometryType(maxPnt);
-		maxPointType.setId(UUID.randomUUID().toString());
-		PointPropertyType maxPointPropertyType = objectFactoryGml.createPointPropertyType();
-		maxPointPropertyType.setPoint(maxPointType);
-		map.setMaxNS95(maxPointPropertyType);
-		
-		realEstateDPR.setPlanForLandRegisterMainPage(map);
-		
-		/* <Extract.RealEstate_DPR.RestrictionOnLandownership> */		
-		List<RestrictionOnLandownership> restrictionOnLandownershipList = restrictionService.getAreaRestrictionsByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
-		
-		restrictionOnLandownershipList.forEach((restriction) -> {
-			realEstateDPR.getRestrictionOnLandownership().add(restriction);
-		}); 
-		/* </Extract.RealEstate_DPR.RestrictionOnLandownership> */
-
-		
+		RealEstateDPR realEstateDPR = realEstateDPRService.getRealEstateDPRByEgrid(egrid);		
 		extract.setRealEstate(realEstateDPR);
 		/* </Extract.RealEstate_DPR> */
 		
@@ -169,12 +96,12 @@ public class ExtractServiceImpl implements ExtractService {
 		/* </Extract.CreationDate> */		
 
 		/*  <Extract.(Not)ConcernedTheme> */
-		List<Theme> concernedThemeList = themeService.findConcernedThemesByGeometry(realEstateDPREntity.getGeometry());
+		List<Theme> concernedThemeList = themeService.findThemesByEgrid(egrid, true);
 		concernedThemeList.forEach((theme) -> {
 			extract.getConcernedTheme().add(theme);
 		});
 		
-		List<Theme> notConcernedThemeList = themeService.findNotConcernedThemesByGeometry(realEstateDPREntity.getGeometry());
+		List<Theme> notConcernedThemeList = themeService.findThemesByEgrid(egrid, false);
 		notConcernedThemeList.forEach((theme) -> {
 			extract.getNotConcernedTheme().add(theme);
 		});

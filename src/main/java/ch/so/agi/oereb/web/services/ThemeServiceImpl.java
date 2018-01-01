@@ -3,18 +3,24 @@ package ch.so.agi.oereb.web.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jvnet.ogc.gml.v_3_2_1.jts.GML321ToJTSGeometryConverter;
+import org.jvnet.ogc.gml.v_3_2_1.jts.JTSToGML321GeometryConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LanguageCode;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LocalisedText;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory;
+import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
+import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
 import ch.so.agi.oereb.web.domains.ThemeEntity;
+import ch.so.agi.oereb.web.repositories.RealEstateDPREntityRepository;
 import ch.so.agi.oereb.web.repositories.ThemeEntityRepository;
 
 @Service
@@ -24,27 +30,36 @@ public class ThemeServiceImpl implements ThemeService {
 	@Autowired
 	private ThemeEntityRepository themeEntityRepository;
 
+	@Autowired
+	private RealEstateDPREntityRepository realEstateDPREntityRepository;
+
 	@Override
-	public List<Theme> findConcernedThemesByGeometry(Polygon limit) {
+	public List<Theme> findThemesByEgrid(String egrid, boolean concerned) {
 		ObjectFactory objectFactory = new ObjectFactory();
 		
-		List<Theme> concernedThemeList = new ArrayList<Theme>();
+		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.findOneByEgrid(egrid);
+		
+		List<Theme> themeList = new ArrayList<Theme>();
 
-		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(limit);
+		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(realEstateDPREntity.getGeometry());
 		themeEntityList.forEach((themeEntity) -> {
-			if (themeEntity.isConcerned()) {
-				Theme theme = objectFactory.createTheme();
-				theme.setCode(themeEntity.getTheme());
-				
-				LocalisedText localisedText = objectFactory.createLocalisedText();
-				localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
-				localisedText.setText(themeEntity.getTitle());
-				theme.setText(localisedText);
-				
-				concernedThemeList.add(theme);
+			
+			Theme theme = objectFactory.createTheme();
+			theme.setCode(themeEntity.getTheme());
+			
+			LocalisedText localisedText = objectFactory.createLocalisedText();
+			localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
+			localisedText.setText(themeEntity.getTitle());
+			theme.setText(localisedText);
+
+			if (concerned && themeEntity.isConcerned()) {
+				themeList.add(theme);
+			} else if (!concerned && !themeEntity.isConcerned()) {
+				themeList.add(theme);
 			}
 		}); 
-		return concernedThemeList;
+		
+		return themeList;
 	}
 
 	@Override
