@@ -84,6 +84,21 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 			geometry.setSurface(surfacePropertyType);
 			restrictionOnLandownership.getGeometry().add(geometry);
 			
+			/////// Documents...
+			log.info("foreign key: " + String.valueOf(restrictionEntity.getRestriction_t_id()));
+			
+			// Zuerst alle Vorschriften, anschliessend Gesetze und Hinweise. Kommt aber auch wieder darauf an, WIE es im
+			// XML strukturiert sein muss.
+			// Btw: woher kennt man den Unterschied zwischen "Hint" und "Law". Attribuiv ja nicht, sondern wie sie
+			// verknüpft sind?
+			
+			// Angedacht: Die Queries suchen mit der rekursiven Methode alles ab:
+			// - Verknüpfung via "HinweisVorschrift" auf ein Dokument.
+			// - Anschliessend von Dokument auf Dokument via HinweisWeitere.
+			// Es können bereits mehrere Einträge in "HinweisVorschrift" für eine Eigentumsbeschränkung vorhanden sein.
+			
+			
+			
 			restrictionOnLandownershipList.add(restrictionOnLandownership);
 		});
 			

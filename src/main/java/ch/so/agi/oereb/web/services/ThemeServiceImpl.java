@@ -3,20 +3,16 @@ package ch.so.agi.oereb.web.services;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jvnet.ogc.gml.v_3_2_1.jts.GML321ToJTSGeometryConverter;
-import org.jvnet.ogc.gml.v_3_2_1.jts.JTSToGML321GeometryConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LanguageCode;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LocalisedText;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory;
-import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
 import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
 import ch.so.agi.oereb.web.domains.ThemeEntity;
