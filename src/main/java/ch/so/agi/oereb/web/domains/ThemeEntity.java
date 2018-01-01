@@ -1,7 +1,10 @@
 package ch.so.agi.oereb.web.domains;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Optional;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -21,7 +24,6 @@ public class ThemeEntity implements Serializable {
 	private boolean concerned;
 	
 	private String title;
-	//private Polygon geometry;
 
 	public int getT_id() {
 		return t_id;
@@ -46,16 +48,6 @@ public class ThemeEntity implements Serializable {
 	public void setConcerned(boolean concerned) {
 		this.concerned = concerned;
 	}
-	
-	/*
-	public Polygon getGeometry() {
-		return geometry;
-	}
-	
-	public void setGeometry(Polygon geometry) {
-		this.geometry = geometry;
-	}
-	*/
 	
 	public String getTitle() {
 		return title;

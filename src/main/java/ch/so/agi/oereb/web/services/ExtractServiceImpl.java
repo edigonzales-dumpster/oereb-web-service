@@ -5,13 +5,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.jvnet.ogc.gml.v_3_2_1.jts.JTSToGML321GeometryConverter;
-import org.jvnet.ogc.gml.v_3_2_1.jts.JTSToGML321PointConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
@@ -35,40 +32,37 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateType;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RestrictionOnLandownership;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
-import ch.so.agi.oereb.web.domains.EgridEntity;
 import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
 import ch.so.agi.oereb.web.domains.ThemeEntity;
 import ch.so.agi.oereb.web.repositories.RealEstateDPREntityRepository;
 import ch.so.agi.oereb.web.repositories.ThemeEntityRepository;
+import ch.so.agi.oereb.web.services.RestrictionOnLandownershipService;
 import ch.so.agi.oereb.web.utils.WMSImage;
 import ch.so.agi.oereb.web.utils.WebMapService;
 import ch.so.agi.oereb.web.utils.WebMapServiceException;
-import net.opengis.gml.v_3_2_1.AbstractGeometryType;
-import net.opengis.gml.v_3_2_1.GeometryPropertyType;
 import net.opengis.gml.v_3_2_1.MultiSurfacePropertyType;
 import net.opengis.gml.v_3_2_1.MultiSurfaceType;
 import net.opengis.gml.v_3_2_1.PointPropertyType;
 import net.opengis.gml.v_3_2_1.PointType;
-import net.opengis.gml.v_3_2_1.PolygonType;
-import net.opengis.gml.v_3_2_1.SurfacePropertyType;
-import net.opengis.gml.v_3_2_1.SurfaceType;
-
 
 // TODO: Exception handling!!!
 
 @Service 
 public class ExtractServiceImpl implements ExtractService {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
-		
-	@Autowired
-	private RealEstateDPREntityRepository realEstateDPREntityRepository;
 	
-	@Autowired
-	private ThemeEntityRepository themeEntityRepository;
-		
 	@Autowired
 	private Environment env;
+
+	@Autowired
+	private RealEstateDPREntityRepository realEstateDPREntityRepository;
+				
+	@Autowired
+	private RestrictionOnLandownershipService restrictionService;
 	
+	@Autowired
+	private ThemeService themeService;
+
 	@Autowired
 	private WebMapService webMapService;
 
@@ -88,6 +82,7 @@ public class ExtractServiceImpl implements ExtractService {
 
 		GetExtractByIdResponseType extractByIdResponseType = objectFactoryExtract.createGetExtractByIdResponseType();
 
+		
 		/* <Extract> */
 		Extract extract = objectFactoryExtractData.createExtract();
 		
@@ -144,7 +139,7 @@ public class ExtractServiceImpl implements ExtractService {
 		minPointPropertyType.setPoint(minPointType);
 		map.setMinNS95(minPointPropertyType);
 
-		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxX()));
+		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxY()));
 		maxPnt.setSRID(2056); // TODO
 		PointType maxPointType = (PointType) converter.createGeometryType(maxPnt);
 		maxPointType.setId(UUID.randomUUID().toString());
@@ -154,11 +149,12 @@ public class ExtractServiceImpl implements ExtractService {
 		
 		realEstateDPR.setPlanForLandRegisterMainPage(map);
 		
-		/* <Extract.RealEstate_DPR.RestrictionOnLandownership> */
-		RestrictionOnLandownership restriction = objectFactoryExtractData.createRestrictionOnLandownership();
+		/* <Extract.RealEstate_DPR.RestrictionOnLandownership> */		
+		List<RestrictionOnLandownership> restrictionOnLandownershipList = restrictionService.getAreaRestrictionsByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
 		
-		
-		
+		restrictionOnLandownershipList.forEach((restriction) -> {
+			realEstateDPR.getRestrictionOnLandownership().add(restriction);
+		}); 
 		/* </Extract.RealEstate_DPR.RestrictionOnLandownership> */
 
 		
@@ -173,27 +169,15 @@ public class ExtractServiceImpl implements ExtractService {
 		/* </Extract.CreationDate> */		
 
 		/*  <Extract.(Not)ConcernedTheme> */
-		Polygon geometry = realEstateDPREntity.getGeometry();
-		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(geometry);
+		List<Theme> concernedThemeList = themeService.findConcernedThemesByGeometry(realEstateDPREntity.getGeometry());
+		concernedThemeList.forEach((theme) -> {
+			extract.getConcernedTheme().add(theme);
+		});
 		
-		for (Iterator<ThemeEntity> it = themeEntityList.iterator(); it.hasNext(); ) {
-			ThemeEntity themeObj = it.next();
-			boolean concerned = themeObj.isConcerned();
-			
-			ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme theme = objectFactoryExtractData.createTheme();			
-			theme.setCode(themeObj.getTheme());
-			
-			LocalisedText localisedText = objectFactoryExtractData.createLocalisedText();
-			localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
-			localisedText.setText(themeObj.getTitle());
-			theme.setText(localisedText);
-
-			if (concerned) {
-				extract.getConcernedTheme().add(theme);
-			} else {
-				extract.getNotConcernedTheme().add(theme);
-			}
-		}
+		List<Theme> notConcernedThemeList = themeService.findNotConcernedThemesByGeometry(realEstateDPREntity.getGeometry());
+		notConcernedThemeList.forEach((theme) -> {
+			extract.getNotConcernedTheme().add(theme);
+		});
 		/* </Extract.(Not)ConcernedTheme> */
 
 		/* <Extract.isReduced> */

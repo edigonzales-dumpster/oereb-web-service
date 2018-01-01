@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 import com.vividsolutions.jts.geom.Polygon;
 
 @Entity
-public class RestrictonOnLandownershipAreaEntity extends RestrictionOnLandownershipEntity {
+public class RestrictionOnLandownershipAreaEntity extends RestrictionOnLandownershipEntity {
 	private static final long serialVersionUID = 1L;
 
 	@Column(name = "area_share")

@@ -15,4 +15,6 @@ public interface ThemeEntityRepository extends JpaRepository<ThemeEntity, Long> 
     @Query(nativeQuery = true)
 	List<ThemeEntity> findThemesByGeometry(@Param("limit") Polygon limit);
 
+    @Query(nativeQuery = true)
+    ThemeEntity getThemeByIliCode(@Param("ilicode") String ilicode);
 }
