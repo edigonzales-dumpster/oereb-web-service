@@ -40,3 +40,6 @@ OEREB web service implementation with Spring Boot.
 * Service classes need a withImages/withGeometry parameter.
 * how to handle Mehrsprachigkeit? Not that we want it but do not write ugly code.
 * take a look at "andere symbole in bbox aber nicht betroffener öreb"
+* understand "TypeCodelist"
+* symobls: take a look: pyconizer
+* wie muss nutzungsplanung im xml daherkommen?
