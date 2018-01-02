@@ -1,5 +1,5 @@
 # oereb-web-service
-OEREB web service implementation with Spring Boot. 
+OEREB web service implementation with Spring Boot.
 
 
 ## Sample requests
@@ -39,3 +39,4 @@ OEREB web service implementation with Spring Boot.
 * Rename geometry attribute according to XSD name.
 * Service classes need a withImages/withGeometry parameter.
 * how to handle Mehrsprachigkeit? Not that we want it but do not write ugly code.
+* take a look at "andere symbole in bbox aber nicht betroffener öreb"
