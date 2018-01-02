@@ -88,7 +88,14 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 				JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
 				Geometry geometry = objectFactoryExtractData.createGeometry();
 
-				Polygon polygon = restrictionEntity.getGeometry();			
+				Polygon polygon = restrictionEntity.getGeometry();	
+				
+				// Debugging
+//				if (restrictionEntity.getT_id() == 364) {
+//					log.info("***********");
+//					log.info(polygon.toString());
+//				}
+								
 				JAXBElement<PolygonType> jaxbPolygonType = (JAXBElement<PolygonType>) converter.createElement(polygon);
 				jaxbPolygonType.getValue().setId(UUID.randomUUID().toString());
 				

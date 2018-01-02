@@ -76,7 +76,7 @@ public class WMSServiceImpl implements WMSService, InitializingBean {
 		String getMapRequest = createGetMapRequest(wmsUrl);
 		
 		log.debug(getMapRequest);
-		System.out.println(getMapRequest);
+//		System.out.println(getMapRequest);
 		
 		// Request the image and return it as byte[], which is needed by JAXB.
 		CloseableHttpClient httpclient = HttpClients.custom()
