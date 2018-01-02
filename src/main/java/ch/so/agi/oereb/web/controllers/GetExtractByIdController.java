@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import ch.so.agi.oereb.web.services.ExtractService;
-import ch.so.agi.oereb.web.utils.WebMapServiceException;
+import ch.so.agi.oereb.web.utils.WMSServiceException;
 
 @RestController
 public class GetExtractByIdController {
@@ -39,7 +41,8 @@ public class GetExtractByIdController {
 	
 	// TODO: throw error if LANG != "de"
 	
-	@RequestMapping(value="/extract/{flavour:reduced|full|signed|embeddable}/{format:xml|json|pdf}/geometry/{egrid:.{14,14}}", 
+	@RequestMapping(value = {"/extract/{flavour:reduced|full|signed|embeddable}/{format:xml|json|pdf}/geometry/{egrid:.{14,14}}", 
+			"/extract/{flavour:reduced|full|signed|embeddable}/{format:xml|json|pdf}/{egrid:.{14,14}}"}, 
 			method=RequestMethod.GET,
 			produces={MediaType.APPLICATION_XML_VALUE})
 			//produces={MediaType.ALL_VALUE})
@@ -50,25 +53,27 @@ public class GetExtractByIdController {
 			@PathVariable("egrid") String egrid,
 			@RequestParam(value = "LANG", required = false, defaultValue = "de") String lang,
 			@RequestParam(value = "TOPIS", required = false, defaultValue = "ALL") String topics,
-			@RequestParam(value = "WITHIMAGES", required = false) String withImages) 
-					throws DatatypeConfigurationException, WebMapServiceException {
+			@RequestParam(value = "WITHIMAGES", required = false) String images) 
+					throws DatatypeConfigurationException, WMSServiceException {
 		
-		log.info("*****************");
-		log.info(withImages);
-		if (withImages == null) {
-			log.info("nicht requested");
-		} else if (withImages.length() >= 0) {
-			log.info("*** requested");
+        UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentRequest();
+        boolean withGeometry = builder.buildAndExpand().getPathSegments().contains("geometry");  // I want this.
+        
+		boolean withImages = true;
+		if (images == null) {
+			withImages = false;
 		}
 		
 		StringBuilder outputMsg = new StringBuilder();
+		outputMsg.append("\n");
+		outputMsg.append("*****************************\n");
 		outputMsg.append("FLAVOUR: " + flavour + "\n");
 		outputMsg.append("FORMAT: " + format + "\n");
 		outputMsg.append("EGRID: " + egrid + "\n");
 		outputMsg.append("LANG: " + lang + "\n");
 		outputMsg.append("TOPICS: " + topics + "\n");
 		outputMsg.append("WITHIMAGES: " + withImages + "\n");
-		
+		outputMsg.append("GEOMETRY: " + withGeometry + "\n");
 		log.info(outputMsg.toString());
 
 		boolean isReduced = false;
@@ -76,12 +81,12 @@ public class GetExtractByIdController {
 			isReduced = true;
 		}
 		
-		return ResponseEntity.ok(extractService.getDummy(egrid, isReduced));
+		return ResponseEntity.ok(extractService.getDummy(egrid, isReduced, withGeometry, withImages));
 		//return ResponseEntity.ok().body(outputMsg.toString());
 	}
 	
 	@ExceptionHandler({IllegalArgumentException.class, DatatypeConfigurationException.class,
-		WebMapServiceException.class})
+		WMSServiceException.class})
 	private ResponseEntity<?> handleBadRequests(Exception e) {
 		log.error(e.getMessage());		
 		return new ResponseEntity<Void>(HttpStatus.INTERNAL_SERVER_ERROR);

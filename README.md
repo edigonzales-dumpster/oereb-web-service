@@ -31,3 +31,11 @@ OEREB web service implementation with Spring Boot.
 * [https://s.geo.admin.ch/77bda69701](https://s.geo.admin.ch/77bda69701)
 * [https://s.geo.admin.ch/77c9c106ab](https://s.geo.admin.ch/77c9c106ab)
 
+## Coding / Refactoring thoughts
+* Every xml element has a service class returning the jaxb element(s).
+* Repositories: What is the input (geometry, egrid, t_id)? What is the output?
+* Service classes and repos: "get xxx by _egrid_ AND e.g. restriction theme" would be the kleinste gemeinsame nenner and would always work (? to be validated). But needs more sql.
+* Achtung: JaxbElements do not know about t_id and the geometry encoding is... ...silly (sorry).
+* Rename geometry attribute according to XSD name.
+* Service classes need a withImages/withGeometry parameter.
+* how to handle Mehrsprachigkeit? Not that we want it but do not write ugly code.

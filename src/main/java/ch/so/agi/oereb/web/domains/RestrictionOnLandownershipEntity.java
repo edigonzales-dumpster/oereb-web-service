@@ -28,6 +28,9 @@ public abstract class RestrictionOnLandownershipEntity implements Serializable {
 	@Column(name = "law_status")
 	private String lawStatus;
 
+	@Column(name = "reference_wms")
+	private String referenceWMS;
+	
 	public int getT_id() {
 		return t_id;
 	}
@@ -74,5 +77,13 @@ public abstract class RestrictionOnLandownershipEntity implements Serializable {
 
 	public void setRestriction_id(int restriction_t_id) {
 		this.restriction_t_id = restriction_t_id;
+	}
+
+	public String getReferenceWMS() {
+		return referenceWMS;
+	}
+
+	public void setReferenceWMS(String referenceWMS) {
+		this.referenceWMS = referenceWMS;
 	}	
 }

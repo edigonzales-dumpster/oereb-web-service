@@ -76,7 +76,7 @@ public class EgridServiceImpl implements EgridService {
 		ObjectFactory objectFactory = new ObjectFactory();
 		GetEGRIDResponseType getEGRIDResponseType = objectFactory.createGetEGRIDResponseType();
 
-		for (Iterator<EgridEntity> it = egridList.iterator(); it.hasNext(); ) {
+		for (Iterator<EgridEntity> it = egridList.iterator(); it.hasNext();) {
 			EgridEntity egridObj = it.next();
 			
 	    		JAXBElement<String> egridEl = objectFactory.createGetEGRIDResponseTypeEgrid(egridObj.getEgrid());

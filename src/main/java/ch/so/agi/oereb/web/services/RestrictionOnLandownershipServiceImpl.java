@@ -3,6 +3,7 @@ package ch.so.agi.oereb.web.services;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,12 +21,15 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LanguageCode;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Lawstatus;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LawstatusCode;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.LocalisedMText;
+import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Map;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.MultilingualMText;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RestrictionOnLandownership;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Geometry;
+import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
 import ch.so.agi.oereb.web.domains.RestrictionOnLandownershipAreaEntity;
 import ch.so.agi.oereb.web.repositories.RestrictionOnLandownershipAreaEntityRepository;
+import ch.so.agi.oereb.web.utils.WMSServiceException;
 import net.opengis.gml.v_3_2_1.PolygonType;
 import net.opengis.gml.v_3_2_1.SurfacePropertyType;
 
@@ -37,21 +41,25 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 	private ThemeService themeService;
 	
 	@Autowired
+	private MapService mapService;
+	
+	@Autowired
 	private RestrictionOnLandownershipAreaEntityRepository restrictionAreaEntityRepository;
 
 	@Override
-	public List<RestrictionOnLandownership> getAreaRestrictionsByGeometry(Polygon limit, int landRegistryArea) {
+	public List<RestrictionOnLandownership> getAreaRestrictionsByRealEstateDPREntity(RealEstateDPREntity realEstateDPREntity, boolean withGeometry) throws WMSServiceException {
 
 		List<RestrictionOnLandownership> restrictionOnLandownershipList = new ArrayList<RestrictionOnLandownership>();
 		
 		ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory objectFactoryExtractData = new ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory();
 		
 		net.opengis.gml.v_3_2_1.ObjectFactory objectFactoryGml = new net.opengis.gml.v_3_2_1.ObjectFactory();
-
-		List<RestrictionOnLandownershipAreaEntity> restrictionAreaEntityList = restrictionAreaEntityRepository.getRestrictionsByGeometry(limit, landRegistryArea);
-		restrictionAreaEntityList.forEach((restrictionEntity) -> {
+		
+		List<RestrictionOnLandownershipAreaEntity> restrictionAreaEntityList = restrictionAreaEntityRepository.getRestrictionsByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
+		for (RestrictionOnLandownershipAreaEntity restrictionEntity : restrictionAreaEntityList) {
 			RestrictionOnLandownership restrictionOnLandownership = objectFactoryExtractData.createRestrictionOnLandownership();
 			
+			// Information
 			LocalisedMText localisedMText = objectFactoryExtractData.createLocalisedMText();
 			localisedMText.setLanguage(LanguageCode.fromValue("de")); // TODO
 			localisedMText.setText(restrictionEntity.getInformation());
@@ -59,33 +67,53 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 			multilingualMText.getLocalisedText().add(localisedMText);
 			restrictionOnLandownership.setInformation(multilingualMText);
 			
+			// AreaShare
 			restrictionOnLandownership.setAreaShare(restrictionEntity.getAreaShare());
 			
+			// Part in Percent
 			BigDecimal b = new BigDecimal(restrictionEntity.getPartInPercent(), MathContext.DECIMAL32);
 			restrictionOnLandownership.setPartInPercent(b);
 			
+			// Law Status
 			Lawstatus lawStatus = objectFactoryExtractData.createLawstatus();
 			lawStatus.setCode(LawstatusCode.fromValue(restrictionEntity.getLawStatus()));
 			restrictionOnLandownership.setLawstatus(lawStatus);
 						
+			// Theme
 			Theme theme = themeService.getThemeObjectByIliCode(restrictionEntity.getTheme());
 			restrictionOnLandownership.setTheme(theme);
 
-			JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
-			Geometry geometry = objectFactoryExtractData.createGeometry();
+			// Geometry
+			if (withGeometry) {
+				JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
+				Geometry geometry = objectFactoryExtractData.createGeometry();
 
-			Polygon polygon = restrictionEntity.getGeometry();			
-			JAXBElement<PolygonType> jaxbPolygonType = (JAXBElement<PolygonType>) converter.createElement(polygon);
-			jaxbPolygonType.getValue().setId(UUID.randomUUID().toString());
+				Polygon polygon = restrictionEntity.getGeometry();			
+				JAXBElement<PolygonType> jaxbPolygonType = (JAXBElement<PolygonType>) converter.createElement(polygon);
+				jaxbPolygonType.getValue().setId(UUID.randomUUID().toString());
+				
+				SurfacePropertyType surfacePropertyType = objectFactoryGml.createSurfacePropertyType();
+				surfacePropertyType.setAbstractSurface(jaxbPolygonType);
+						
+				geometry.setSurface(surfacePropertyType);
+				restrictionOnLandownership.getGeometry().add(geometry);
+			}
 			
-			SurfacePropertyType surfacePropertyType = objectFactoryGml.createSurfacePropertyType();
-			surfacePropertyType.setAbstractSurface(jaxbPolygonType);
-					
-			geometry.setSurface(surfacePropertyType);
-			restrictionOnLandownership.getGeometry().add(geometry);
+			// Map
+			Map map = mapService.getMapByRestrictionEntityAndRealEstateDPREntity(restrictionEntity, realEstateDPREntity, withGeometry);
+			
+			
+			restrictionOnLandownership.setMap(map);
+			
+			
+			// TODO: Legende für *die* Eigentumsbeschränkung und restliche Legenden.
+			// GetMap URL
+			// BBox (real estate geometry)
+			// -> getMapByRestrictionEntityId(int t_id)
+			
 			
 			/////// Documents...
-			log.info("foreign key: " + String.valueOf(restrictionEntity.getRestriction_t_id()));
+			//log.info("foreign key: " + String.valueOf(restrictionEntity.getRestriction_t_id()));
 			
 			// Zuerst alle Vorschriften, anschliessend Gesetze und Hinweise. Kommt aber auch wieder darauf an, WIE es im
 			// XML strukturiert sein muss.
@@ -100,7 +128,9 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 			
 			
 			restrictionOnLandownershipList.add(restrictionOnLandownership);
-		});
+		}
+
+		
 			
 		return restrictionOnLandownershipList;
 	}

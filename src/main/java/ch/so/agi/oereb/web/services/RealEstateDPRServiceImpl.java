@@ -24,8 +24,8 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RestrictionOnLandownershi
 import ch.so.agi.oereb.web.domains.RealEstateDPREntity;
 import ch.so.agi.oereb.web.repositories.RealEstateDPREntityRepository;
 import ch.so.agi.oereb.web.utils.WMSImage;
-import ch.so.agi.oereb.web.utils.WebMapService;
-import ch.so.agi.oereb.web.utils.WebMapServiceException;
+import ch.so.agi.oereb.web.utils.WMSServiceImpl;
+import ch.so.agi.oereb.web.utils.WMSServiceException;
 import net.opengis.gml.v_3_2_1.MultiSurfacePropertyType;
 import net.opengis.gml.v_3_2_1.MultiSurfaceType;
 import net.opengis.gml.v_3_2_1.PointPropertyType;
@@ -42,13 +42,13 @@ public class RealEstateDPRServiceImpl implements RealEstateDPRService {
 	private RealEstateDPREntityRepository realEstateDPREntityRepository;
 
 	@Autowired
-	private WebMapService webMapService;
+	private WMSServiceImpl wmsService;
 	
 	@Autowired
 	private RestrictionOnLandownershipService restrictionService;
 
 	@Override
-	public RealEstateDPR getRealEstateDPRByEgrid(String egrid) throws WebMapServiceException {		
+	public RealEstateDPR getRealEstateDPRByEgrid(String egrid, boolean withGeometry) throws WMSServiceException {		
 		ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory objectFactoryExtractData =
 				new ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.ObjectFactory();
 		
@@ -72,16 +72,19 @@ public class RealEstateDPRServiceImpl implements RealEstateDPRService {
 		realEstateDPR.setLandRegistryArea(realEstateDPREntity.getLandRegistryArea());
 
 		// Not sure about the encoding...
-		// http://erouault.blogspot.ch/2014/04/gml-madness.html
-		Polygon limit = realEstateDPREntity.getGeometry();
-		Polygon[] polygons = {limit};
-		MultiPolygon multiLimit = geometryFactory.createMultiPolygon(polygons);
-		multiLimit.setSRID(2056); // TODO
-		MultiSurfaceType limitMultiSurfaceType = (MultiSurfaceType) converter.createGeometryType(multiLimit);
-		limitMultiSurfaceType.setId(UUID.randomUUID().toString());
-		MultiSurfacePropertyType limitMultiSurfacePropertyType = objectFactoryGml.createMultiSurfacePropertyType();
-		limitMultiSurfacePropertyType.setMultiSurface(limitMultiSurfaceType);		
-		realEstateDPR.setLimit(limitMultiSurfacePropertyType);
+		// http://erouault.blogspot.ch/2014/04/gml-madness.html		
+		if (withGeometry) {
+			Polygon limit = realEstateDPREntity.getGeometry();
+			Polygon[] polygons = {limit};
+			MultiPolygon multiLimit = geometryFactory.createMultiPolygon(polygons);
+			multiLimit.setSRID(2056); // TODO
+			MultiSurfaceType limitMultiSurfaceType = (MultiSurfaceType) converter.createGeometryType(multiLimit);
+			limitMultiSurfaceType.setId(UUID.randomUUID().toString());
+			MultiSurfacePropertyType limitMultiSurfacePropertyType = objectFactoryGml.createMultiSurfacePropertyType();
+			limitMultiSurfacePropertyType.setMultiSurface(limitMultiSurfaceType);		
+			
+			realEstateDPR.setLimit(limitMultiSurfacePropertyType);
+		}
 
 		// TODO: This is for testing wms requests and base64Binary stuff.
 		// This is the url we can get from the data (Transferstruktur).
@@ -89,11 +92,11 @@ public class RealEstateDPRServiceImpl implements RealEstateDPRService {
 		String wmsUrl = env.getProperty("oereb.wms.plan-for-land-register");
 		
 		if (wmsUrl == null) {
-			throw new WebMapServiceException("oereb.wms.plan-for-land-register property not found.");
+			throw new WMSServiceException("oereb.wms.plan-for-land-register property not found.");
 		}
 		
 		WMSImage wmsImage = null;
-		wmsImage = webMapService.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
+		wmsImage = wmsService.getImage(wmsUrl, realEstateDPREntity.getGeometry().getEnvelopeInternal());
 		
 		/* <PlanForLandRegisterMainPage> */
 		// Verified base64 string with https://codebeautify.org/base64-to-image-converter -> There is really an image :-)
@@ -101,33 +104,34 @@ public class RealEstateDPRServiceImpl implements RealEstateDPRService {
 		map.setImage(wmsImage.getImage());
 		
 		// Set extent of image.
-		// Converters from https://github.com/bjornharrtell/ogc-tools		
-		Point minPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMinX(), wmsImage.getEnvelope().getMinY()));
-		minPnt.setSRID(2056); // TODO
-		PointType minPointType = (PointType) converter.createGeometryType(minPnt);
-		minPointType.setId(UUID.randomUUID().toString());
-		PointPropertyType minPointPropertyType = objectFactoryGml.createPointPropertyType();
-		minPointPropertyType.setPoint(minPointType);
-		map.setMinNS95(minPointPropertyType);
+		// Converters from https://github.com/bjornharrtell/ogc-tools	
+		if (withGeometry) {
+			Point minPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMinX(), wmsImage.getEnvelope().getMinY()));
+			minPnt.setSRID(2056); // TODO
+			PointType minPointType = (PointType) converter.createGeometryType(minPnt);
+			minPointType.setId(UUID.randomUUID().toString());
+			PointPropertyType minPointPropertyType = objectFactoryGml.createPointPropertyType();
+			minPointPropertyType.setPoint(minPointType);
+			map.setMinNS95(minPointPropertyType);
 
-		Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxY()));
-		maxPnt.setSRID(2056); // TODO
-		PointType maxPointType = (PointType) converter.createGeometryType(maxPnt);
-		maxPointType.setId(UUID.randomUUID().toString());
-		PointPropertyType maxPointPropertyType = objectFactoryGml.createPointPropertyType();
-		maxPointPropertyType.setPoint(maxPointType);
-		map.setMaxNS95(maxPointPropertyType);
-		
-		realEstateDPR.setPlanForLandRegisterMainPage(map);		
+			Point maxPnt = geometryFactory.createPoint(new Coordinate(wmsImage.getEnvelope().getMaxX(), wmsImage.getEnvelope().getMaxY()));
+			maxPnt.setSRID(2056); // TODO
+			PointType maxPointType = (PointType) converter.createGeometryType(maxPnt);
+			maxPointType.setId(UUID.randomUUID().toString());
+			PointPropertyType maxPointPropertyType = objectFactoryGml.createPointPropertyType();
+			maxPointPropertyType.setPoint(maxPointType);
+			map.setMaxNS95(maxPointPropertyType);
+			
+			realEstateDPR.setPlanForLandRegisterMainPage(map);		
+		}
 		/* </PlanForLandRegisterMainPage> */
 
 		
 		/* <RestrictionOnLandownership> */
-		List<RestrictionOnLandownership> restrictionOnLandownershipList = restrictionService.getAreaRestrictionsByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
-		
-		restrictionOnLandownershipList.forEach((restriction) -> {
+		List<RestrictionOnLandownership> restrictionOnLandownershipList = restrictionService.getAreaRestrictionsByRealEstateDPREntity(realEstateDPREntity, withGeometry);
+		for (RestrictionOnLandownership restriction : restrictionOnLandownershipList) {
 			realEstateDPR.getRestrictionOnLandownership().add(restriction);			
-		}); 		
+		}	
 		/* </RestrictionOnLandownership> */
 
 		return realEstateDPR;

@@ -36,7 +36,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 
 @Service
-public class WebMapService implements InitializingBean {
+public class WMSServiceImpl implements WMSService, InitializingBean {
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
@@ -67,7 +67,7 @@ public class WebMapService implements InitializingBean {
 		mapBlowFactor = Double.valueOf(env.getProperty("oereb.extract.static.map.blow-factor", "1.05"));
     }
 		
-	public WMSImage getImage(String wmsUrl, Envelope parcelExtent) throws WebMapServiceException {
+	public WMSImage getImage(String wmsUrl, Envelope parcelExtent) throws WMSServiceException {
 		// Do some math first: We need to calculate the WIDTH and HEIGHT and BBOX 
 		// for the GetMap request.
 		calculateGetMapParameters(parcelExtent);
@@ -116,7 +116,7 @@ public class WebMapService implements InitializingBean {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
+			throw new WMSServiceException(e.getMessage());
 		} finally {
 			IOUtils.closeQuietly(httpclient);
 		}
@@ -164,7 +164,7 @@ public class WebMapService implements InitializingBean {
 		wmsBbox = bboxEnvelope.getMinX() + "," + bboxEnvelope.getMinY() + "," + bboxEnvelope.getMaxX()  + "," + bboxEnvelope.getMaxY();
 	}
 	
-	private String createGetMapRequest(String wmsUrl) throws WebMapServiceException {
+	private String createGetMapRequest(String wmsUrl) throws WMSServiceException {
 		Charset charset = Charset.forName("UTF-8");
 		List<org.apache.http.NameValuePair> params;
 		URI getMapUri;
@@ -174,7 +174,7 @@ public class WebMapService implements InitializingBean {
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
-			throw new WebMapServiceException(e.getMessage());
+			throw new WMSServiceException(e.getMessage());
 		}
 		
 		String schema = getMapUri.getScheme();

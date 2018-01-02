@@ -18,7 +18,7 @@ import ch.admin.geo.schemas.v_d.oereb._1_0.extract.GetExtractByIdResponseType;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Extract;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.RealEstateDPR;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extractdata.Theme;
-import ch.so.agi.oereb.web.utils.WebMapServiceException;
+import ch.so.agi.oereb.web.utils.WMSServiceException;
 
 // TODO: Exception handling!!!
 
@@ -36,7 +36,7 @@ public class ExtractServiceImpl implements ExtractService {
 	private ThemeService themeService;
 
 	@Override
-	public GetExtractByIdResponseType getDummy(String egrid, boolean isReduced) throws DatatypeConfigurationException, WebMapServiceException {		
+	public GetExtractByIdResponseType getDummy(String egrid, boolean isReduced, boolean withGeometry, boolean withImages) throws DatatypeConfigurationException, WMSServiceException {		
 		ch.admin.geo.schemas.v_d.oereb._1_0.extract.ObjectFactory objectFactoryExtract = 
 				new ch.admin.geo.schemas.v_d.oereb._1_0.extract.ObjectFactory();
 		
@@ -50,7 +50,7 @@ public class ExtractServiceImpl implements ExtractService {
 		Extract extract = objectFactoryExtractData.createExtract();
 		
 		/* <Extract.RealEstate_DPR> */
-		RealEstateDPR realEstateDPR = realEstateDPRService.getRealEstateDPRByEgrid(egrid);		
+		RealEstateDPR realEstateDPR = realEstateDPRService.getRealEstateDPRByEgrid(egrid, withGeometry);		
 		extract.setRealEstate(realEstateDPR);
 		/* </Extract.RealEstate_DPR> */
 		
@@ -63,14 +63,14 @@ public class ExtractServiceImpl implements ExtractService {
 
 		/*  <Extract.(Not)ConcernedTheme> */
 		List<Theme> concernedThemeList = themeService.findThemesByEgrid(egrid, true);
-		concernedThemeList.forEach((theme) -> {
+		for(Theme theme : concernedThemeList) {
 			extract.getConcernedTheme().add(theme);
-		});
+		}
 		
 		List<Theme> notConcernedThemeList = themeService.findThemesByEgrid(egrid, false);
-		notConcernedThemeList.forEach((theme) -> {
+		for(Theme theme : notConcernedThemeList) {
 			extract.getNotConcernedTheme().add(theme);
-		});
+		}
 		/* </Extract.(Not)ConcernedTheme> */
 
 		/* <Extract.isReduced> */
