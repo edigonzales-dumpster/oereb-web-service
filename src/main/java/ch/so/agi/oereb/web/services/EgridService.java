@@ -3,11 +3,11 @@ package ch.so.agi.oereb.web.services;
 import ch.admin.geo.schemas.v_d.oereb._1_0.extract.GetEGRIDResponseType;
 
 public interface EgridService {
-	GetEGRIDResponseType getEgridByNumberAndIdentDN(String number, String identDN);
+	GetEGRIDResponseType getGetEGRIDResponseTypeByNumberAndIdentDN(String number, String identDN);
 	
-	GetEGRIDResponseType getEgridByXY(double easting, double northing);
+	GetEGRIDResponseType getGetEGRIDResponseTypeByXY(double easting, double northing);
 	
-	GetEGRIDResponseType getEgridByGNSS(double latitude, double longitude);
+	GetEGRIDResponseType getGetEGRIDResponseTypeByGNSS(double latitude, double longitude);
 
-	GetEGRIDResponseType getEgridByPostalcodeAndLocalisationAndNumber(String postalcode, String localisation, String number);
+	GetEGRIDResponseType getGetEGRIDResponseTypeByPostalcodeAndLocalisationAndNumber(String postalcode, String localisation, String number);
 }

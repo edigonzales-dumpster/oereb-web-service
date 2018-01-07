@@ -30,14 +30,14 @@ public class ThemeServiceImpl implements ThemeService {
 	private RealEstateDPREntityRepository realEstateDPREntityRepository;
 
 	@Override
-	public List<Theme> findThemesByEgrid(String egrid, boolean concerned) {
+	public List<Theme> getThemeByEgrid(String egrid, boolean concerned) {
 		ObjectFactory objectFactory = new ObjectFactory();
 		
-		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.findOneByEgrid(egrid);
+		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.getRealEstateDPREntityByEgrid(egrid);
 		
 		List<Theme> themeList = new ArrayList<Theme>();
 
-		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(realEstateDPREntity.getGeometry());
+		List<ThemeEntity> themeEntityList = themeEntityRepository.getThemeEntityByGeometry(realEstateDPREntity.getGeometry());
 		themeEntityList.forEach((themeEntity) -> {
 			
 			Theme theme = objectFactory.createTheme();
@@ -58,31 +58,31 @@ public class ThemeServiceImpl implements ThemeService {
 		return themeList;
 	}
 
-	@Override
-	public List<Theme> findNotConcernedThemesByGeometry(Polygon limit) {
-		ObjectFactory objectFactory = new ObjectFactory();
-		
-		List<Theme> notConcerndedThemeList = new ArrayList<Theme>();
+//	@Override
+//	public List<Theme> findNotConcernedThemesByGeometry(Polygon limit) {
+//		ObjectFactory objectFactory = new ObjectFactory();
+//		
+//		List<Theme> notConcerndedThemeList = new ArrayList<Theme>();
+//
+//		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(limit);
+//		themeEntityList.forEach((themeEntity) -> {
+//			if (!themeEntity.isConcerned()) {
+//				Theme theme = objectFactory.createTheme();
+//				theme.setCode(themeEntity.getTheme());
+//				
+//				LocalisedText localisedText = objectFactory.createLocalisedText();
+//				localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
+//				localisedText.setText(themeEntity.getTitle());
+//				theme.setText(localisedText);
+//				
+//				notConcerndedThemeList.add(theme);
+//			}
+//		}); 
+//		return notConcerndedThemeList;
+//	}
 
-		List<ThemeEntity> themeEntityList = themeEntityRepository.findThemesByGeometry(limit);
-		themeEntityList.forEach((themeEntity) -> {
-			if (!themeEntity.isConcerned()) {
-				Theme theme = objectFactory.createTheme();
-				theme.setCode(themeEntity.getTheme());
-				
-				LocalisedText localisedText = objectFactory.createLocalisedText();
-				localisedText.setLanguage(LanguageCode.fromValue("de")); // TODO
-				localisedText.setText(themeEntity.getTitle());
-				theme.setText(localisedText);
-				
-				notConcerndedThemeList.add(theme);
-			}
-		}); 
-		return notConcerndedThemeList;
-	}
-
 	@Override
-	public Theme getThemeObjectByIliCode(String ilicode) {
+	public Theme getThemeByIliCode(String ilicode) {
 		ObjectFactory objectFactory = new ObjectFactory();
 		
 		Theme theme = objectFactory.createTheme();			

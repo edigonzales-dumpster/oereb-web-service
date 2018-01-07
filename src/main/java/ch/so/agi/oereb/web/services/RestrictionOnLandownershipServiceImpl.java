@@ -55,7 +55,7 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 		
 		net.opengis.gml.v_3_2_1.ObjectFactory objectFactoryGml = new net.opengis.gml.v_3_2_1.ObjectFactory();
 		
-		List<RestrictionOnLandownershipAreaEntity> restrictionAreaEntityList = restrictionAreaEntityRepository.getRestrictionsByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
+		List<RestrictionOnLandownershipAreaEntity> restrictionAreaEntityList = restrictionAreaEntityRepository.getRestrictionOnLandownershipAreaEntityByGeometry(realEstateDPREntity.getGeometry(), realEstateDPREntity.getLandRegistryArea());
 		for (RestrictionOnLandownershipAreaEntity restrictionEntity : restrictionAreaEntityList) {
 			RestrictionOnLandownership restrictionOnLandownership = objectFactoryExtractData.createRestrictionOnLandownership();
 			
@@ -80,7 +80,7 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 			restrictionOnLandownership.setLawstatus(lawStatus);
 						
 			// Theme
-			Theme theme = themeService.getThemeObjectByIliCode(restrictionEntity.getTheme());
+			Theme theme = themeService.getThemeByIliCode(restrictionEntity.getTheme());
 			restrictionOnLandownership.setTheme(theme);
 
 			// Geometry

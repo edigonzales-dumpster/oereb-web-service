@@ -12,6 +12,6 @@ import ch.so.agi.oereb.web.domains.RealEstateDPREntity;;
 public interface RealEstateDPREntityRepository extends JpaRepository<RealEstateDPREntity, Long> {
 
     @Query(nativeQuery = true)
-	RealEstateDPREntity findOneByEgrid(@Param("egrid") String egrid);
+	RealEstateDPREntity getRealEstateDPREntityByEgrid(@Param("egrid") String egrid);
 
 }

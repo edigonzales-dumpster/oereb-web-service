@@ -31,43 +31,43 @@ public class EgridServiceImpl implements EgridService {
     private EgridEntityRepository egridEntityRepository;
         
     @Override
-	public GetEGRIDResponseType getEgridByPostalcodeAndLocalisationAndNumber(String postalcode, String localisation, String number) {
+	public GetEGRIDResponseType getGetEGRIDResponseTypeByPostalcodeAndLocalisationAndNumber(String postalcode, String localisation, String number) {
     		List<EgridEntity> egridEntityList;
     	
     		if (number == null) {
-        		egridEntityList = egridEntityRepository.getEgridByPostalcodeAndLocalisation(Integer.valueOf(postalcode), localisation);
+        		egridEntityList = egridEntityRepository.getEgridEntityByPostalcodeAndLocalisation(Integer.valueOf(postalcode), localisation);
     		} else {
-        		egridEntityList = egridEntityRepository.getEgridByPostalcodeAndLocalisationAndHousingNumber(Integer.valueOf(postalcode), localisation, number);
+        		egridEntityList = egridEntityRepository.getEgridEntityByPostalcodeAndLocalisationAndHousingNumber(Integer.valueOf(postalcode), localisation, number);
     		}
 
     		return createGetEGRIDResponseType(egridEntityList);
     }
     
     @Override
-    public GetEGRIDResponseType getEgridByGNSS(double latitude, double longitude) {
+    public GetEGRIDResponseType getGetEGRIDResponseTypeByGNSS(double latitude, double longitude) {
 		GeometryFactory factory = new GeometryFactory();
 		Point p = factory.createPoint(new Coordinate(longitude, latitude));
 		p.setSRID(SRID_WGS84);
 	
-		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridByGNSS(p);
+		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridEntityByGNSS(p);
 				
 		return createGetEGRIDResponseType(egridEntityList);
     }
     
     @Override
-    public GetEGRIDResponseType getEgridByXY(double easting, double northing) {
+    public GetEGRIDResponseType getGetEGRIDResponseTypeByXY(double easting, double northing) {
 		GeometryFactory factory = new GeometryFactory();
 		Point p = factory.createPoint(new Coordinate(easting, northing));
 		p.setSRID(SRID_LV95);
 
-    		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridByXY(p);
+    		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridEntityByXY(p);
     		    		
     		return createGetEGRIDResponseType(egridEntityList);
     }
     
     @Override
-    public GetEGRIDResponseType getEgridByNumberAndIdentDN(String number, String identdn) {
-    		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridByNumberAndIdentdn(number, identdn);
+    public GetEGRIDResponseType getGetEGRIDResponseTypeByNumberAndIdentDN(String number, String identdn) {
+    		List<EgridEntity> egridEntityList = egridEntityRepository.getEgridEntityByNumberAndIdentdn(number, identdn);
     		
     		return createGetEGRIDResponseType(egridEntityList);
     }

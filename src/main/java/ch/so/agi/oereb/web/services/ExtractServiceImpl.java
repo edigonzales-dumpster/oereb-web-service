@@ -62,12 +62,12 @@ public class ExtractServiceImpl implements ExtractService {
 		/* </Extract.CreationDate> */		
 
 		/*  <Extract.(Not)ConcernedTheme> */
-		List<Theme> concernedThemeList = themeService.findThemesByEgrid(egrid, true);
+		List<Theme> concernedThemeList = themeService.getThemeByEgrid(egrid, true);
 		for(Theme theme : concernedThemeList) {
 			extract.getConcernedTheme().add(theme);
 		}
 		
-		List<Theme> notConcernedThemeList = themeService.findThemesByEgrid(egrid, false);
+		List<Theme> notConcernedThemeList = themeService.getThemeByEgrid(egrid, false);
 		for(Theme theme : notConcernedThemeList) {
 			extract.getNotConcernedTheme().add(theme);
 		}

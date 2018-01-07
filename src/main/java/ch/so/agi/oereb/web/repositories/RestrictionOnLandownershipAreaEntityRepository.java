@@ -13,5 +13,5 @@ import ch.so.agi.oereb.web.domains.RestrictionOnLandownershipAreaEntity;
 public interface RestrictionOnLandownershipAreaEntityRepository extends JpaRepository<RestrictionOnLandownershipAreaEntity, Long> {
     
 	@Query(nativeQuery = true)
-    List<RestrictionOnLandownershipAreaEntity> getRestrictionsByGeometry(@Param("limit") Polygon limit, @Param("land_registry_area") int landRegistryArea);
+    List<RestrictionOnLandownershipAreaEntity> getRestrictionOnLandownershipAreaEntityByGeometry(@Param("limit") Polygon limit, @Param("land_registry_area") int landRegistryArea);
 }

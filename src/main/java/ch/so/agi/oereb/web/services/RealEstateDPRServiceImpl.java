@@ -58,7 +58,7 @@ public class RealEstateDPRServiceImpl implements RealEstateDPRService {
 
 		JTSToGML321GeometryConverter converter = new JTSToGML321GeometryConverter();
 
-		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.findOneByEgrid(egrid);
+		RealEstateDPREntity realEstateDPREntity = realEstateDPREntityRepository.getRealEstateDPREntityByEgrid(egrid);
 
 		RealEstateDPR realEstateDPR = objectFactoryExtractData.createRealEstateDPR();
 		realEstateDPR.setNumber(realEstateDPREntity.getNumber());
