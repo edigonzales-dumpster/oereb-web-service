@@ -85,7 +85,7 @@ public class MapServiceImpl implements MapService {
 		}
 
 		// 2) create Legend (needs 
-		List<LegendEntryEntity> legendEntryEntityList = legendEntryEntityRepository.getLegendEntryEntityByRestrictionEntityId(restrictionEntity.getT_id());
+		List<LegendEntryEntity> legendEntryEntityList = legendEntryEntityRepository.getLegendEntryEntityByRestrictionEntityId(restrictionEntity.getT_id(), "de");
 		for(LegendEntryEntity legendEntryEntity : legendEntryEntityList) {
 			LegendEntry legendEntry = objectFactoryExtractData.createLegendEntry();
 			

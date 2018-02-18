@@ -11,5 +11,5 @@ import ch.so.agi.oereb.web.domains.LegendEntryEntity;
 public interface LegendEntryEntityRepository extends JpaRepository<LegendEntryEntity, Long> {
 	
     @Query(nativeQuery = true)
-	List<LegendEntryEntity> getLegendEntryEntityByRestrictionEntityId(@Param("t_id") int t_id);
+	List<LegendEntryEntity> getLegendEntryEntityByRestrictionEntityId(@Param("t_id") int t_id, @Param("lang") String lang);
 }

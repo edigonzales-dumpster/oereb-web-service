@@ -74,7 +74,7 @@ public class RestrictionOnLandownershipServiceImpl implements RestrictionOnLando
 			BigDecimal b = new BigDecimal(restrictionEntity.getPartInPercent(), MathContext.DECIMAL32);
 			restrictionOnLandownership.setPartInPercent(b);
 			
-			// Law Status
+		    // Law Status
 			Lawstatus lawStatus = objectFactoryExtractData.createLawstatus();
 			lawStatus.setCode(LawstatusCode.fromValue(restrictionEntity.getLawStatus()));
 			restrictionOnLandownership.setLawstatus(lawStatus);
